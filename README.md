@@ -1,64 +1,15 @@
-This is a template for the EDAV final project. It is based on the template created with *File, New Project..., New Directory, Book Project using bookdown* in RStudio. 
+Questions to Resolve:
+What are the most significant aspects of a high paid job?
+1. Investigate external reasons that determine salaries. What are they? How do they affect salary? Possible factors: industry, company, location.
+2. Explore internal factors that determine salaries: what professional skills are necessary? What skills should we acquire to get a higher wage?
+3. Job titles: which specific job positions are more prospective?
+4. Is there any correlation between demand and salary?
 
+How to Address Questions Using the Data:
+1. Calculate the mean, median and mode of salary and find a distribution of salary in data-related jobs.
+2. (For question 1) Examine correlations between all categorical data and salary and present it through pair plots and correlation heatmap. Since we proposed that industry, company and location could be the most important factors, we decided to pay special attention to them.
+3. (For question 2) For skill requirements, we could extract them from job descriptions by applying the TF-IDF method to analyze the frequency of words.
+4. (For question 3) Plot distribution of wages of all job titles. Find median, 75th, and 90th percentile wage. Investigate the shape and skew of the distribution curves. Are they u-shaped or bell-shaped? Are they left-skewed or right skewed?
+5. (For question 4) count appearances of each specific job title in the dataset as its demand. Group by companies and industries respectively, we could examine whether there is a connection between job demand and salaries.
 
-## ABSOLUTE ESSENTIALS
-
-*If you have any difficulties or have feedback of any kind, please file an issue.*
-
-### Copy this template
-
-- [ ] 1. Click the green "Use this template" button above.  DO NOT FORK THE REPO. Choose a descriptive name for your repo, such as "federalbudget" or "AIDSdeaths".  (If you change your mind before you do any work, delete your new repo and start over.)
-
-- [ ] 2. In the Description field, write: "Bookdown source files for EDAV final project".
-
-### Set up GitHub Pages	
-- [ ] 1. On the home page of your repo, click Settings. Scroll down to the GitHub pages section and change **Source** from **None** to **main**, change **/ (root)** to **/docs** folder, and click Save. Above the **Source** line, a bar will appear with your book's URL. The bar will initially be blue and indicate that your book is *ready* to be published and will change to green once it is published. Copy the URL. (Note that sometimes there is a delay until your book actually appears at that URL. If it doesn't appear after a few minutes, make a change and commit it to trigger a GitHub Pages build.)	
-
-- [ ] 2. Click the gear button near "About" on the home page of the repo and paste your book URL into the **Website** field that appears on the right.
-
-### Clone the repo
-
-- [ ] 1. Clone your new repo with *File, New Project..., Version Control, Git* in RStudio.
-
-### Edit some key files
-
-- [ ] 1. In `index.Rmd`, change YOUR TITLE HERE to your title.
-
-- [ ] 2. In `index.Rmd`, change YOUR NAMES HERE to your names.
-
-- [ ] 3. In `_bookdown.yml`, change YOUR GITHUB USERNAME to your GitHub username in the two places it appears.
-
-- [ ] 4. In `_bookdown.yml`, change YOUR GITHUB REPO to your GitHub repo name in the two places it appears.
-
-(Note that 3. and 4. provide links to the `.Rmd` files of your project for editing and viewing. If you move your `.Rmd` files you will need to update these file paths. Once your book is rendered, test that the edit (pen) and view (eye) buttons work.)
-
-- [ ] 5. In `_output.yml`, change YOUR SHORT TITLE to a shortened version of your title. (Leave the "after:" line indicating that the book was published with bookdown as is.)
-
-### Render the book
-
-- [ ] 1. Install **bookdown** with `install.packages("bookdown")`. If you already have it, update to the most recent version.
-
-- [ ] 2. Render locally with `bookdown::render_book("index.Rmd")` or clicking the *Build book* button which should appear in the Build tab (in the same pane as Environment, History, Connections, ...).
-
-- [ ] 3. Use `browseURL("docs/index.html")` to view your book locally (or just open `index.html` in a browser).
-
-- [ ] 4. If it looks good, commit and push all changed files to GitHub. 
-
-(You will need to repeat steps 2 and 4 every time you wish to update the book online.)
-
-### Edit README	
-
-Once you've completed these steps, delete the content of this **README** and add a short description of your project with a link to the book URL. It would be appreciated if you add the following to the end:	
-
-*This repo was initially generated from a bookdown template available here: https://github.com/jtr13/EDAVtemplate.*	
-
-### Demo Video	
-
-A demo video showing how to create a **bookdown book** following these similar instructions: http://bit.ly/fiveminutebookdown Note that this video uses a different template.
-
-### Additional features	
-
-Please consult the official guide to **bookdown**: https://bookdown.org/yihui/bookdown
-
-
-
+Link: jtr13.github.io/edavtemplate/
