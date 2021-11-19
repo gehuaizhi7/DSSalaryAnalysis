@@ -1,1 +1,262 @@
-# Missing values
+---
+output: html_document
+---
+# Missing values 
+
+
+
+## load data & preprocess data
+ 
+- replace -1, Unknown/ Non-Applicable to NA 
+- convert 'Salary Estimate' to col: low_salary, high_salary, avg_salary
+- convert 'employee' to col: lower_bound_employee, upper_bound_employee, avg_employee
+```{r echo=FALSE}
+
+# Basics
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(tibble)) install.packages("tibble")
+if(!require(tidyr)) install.packages("tidyr")
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(forcats)) install.packages("forcats")
+if(!require(patchwork)) install.packages("patchwork")
+if(!require(scales)) install.packages("scales")
+if(!require(readr)) install.packages("readr")
+if(!require(ggthemes)) install.packages("ggthemes")
+if(!require(ggrepel)) install.packages("ggrepel")
+if(!require(GGally)) install.packages("GGally")
+if(!require(plotly)) install.packages("plotly")
+if(!require(forcats)) install.packages("forcats")
+if(!require(stringr)) install.packages("stringr")
+
+if(!require(ggpubr)) install.packages("ggpubr")
+if(!require(PupillometryR)) install.packages("PupillometryR")
+if(!require(ggridges)) install.packages("ggridges")
+if(!require(RColorBrewer)) install.packages("RColorBrewer")
+if(!require(magrittr)) install.packages("magrittr") # allow %<>%
+
+if(!require(vcd)) install.packages("vcd")
+if(!require(d3r)) install.packages("d3r")
+if(!require(ggalluvial)) install.packages("ggalluvial")
+if(!require(parcoords)) install.packages("parcoords")
+
+# pair plot
+if(!require(gridGraphics)) install.packages("gridGraphics")
+if(!require(gridExtra)) install.packages("gridExtra")
+
+library("data.table")
+library(mi)
+```
+
+```{r echo=FALSE}
+ds_data = fread('data/DataScientist.csv') 
+ds_data %>%
+  select(3:ncol(.)) %>%
+  mutate_all(~ifelse(. %in% c("NA", -1, "Unknown", "Unknown / Non-Applicable"), NA, .))   %>%
+  as_tibble %>%
+  separate(`Salary Estimate`, into = c("low","high"), sep = "-",remove = T) %>%
+  mutate(low_salary = as.numeric(str_extract(low, "\\d+")),
+         high_salary = as.numeric(str_extract(high, "\\d+")),
+         avg_salary = (low_salary + high_salary) / 2)  %>% 
+
+  separate(Size, into = c("low_ppl","high_ppl"), sep = "to", remove = T) %>% 
+  mutate(lower_bound_employee = as.numeric(str_extract(low_ppl, "\\d+")),
+         upper_bound_employee = as.numeric(str_extract(high_ppl, "\\d+")),
+         avg_employee= case_when(
+           !is.na(lower_bound_employee) & is.na(upper_bound_employee) ~ lower_bound_employee,
+           T ~ (lower_bound_employee + upper_bound_employee) / 2)) ->ds_data
+```
+
+
+
+```{r echo=FALSE}
+head(ds_data)
+
+```
+
+## missing value by column:
+
+```{r echo=FALSE}
+colSums(is.na(ds_data)) %>%
+  sort(decreasing = TRUE)
+```
+
+## choose first ten company 
+
+```{r echo=FALSE, fig.width = 13}
+n_row = nrow(ds_data)
+variables = colnames(ds_data)
+
+ds_data %>% 
+  slice(1:10) %>%
+  mutate_all( as.character) %>%
+  relocate(`Company Name`, 1) %>%
+  pivot_longer(2:ncol(.)) %>%
+  mutate(missing = ifelse(is.na(value), T, F)) %>%
+
+ggplot() +
+  geom_tile(aes(x=name,
+                y=`Company Name`,
+                fill=factor(missing))) + 
+  labs(x = 'variable', y = 'company')+
+  scale_fill_manual(values = c("grey60", alpha( "cornflowerblue", 0.6))) +
+  scale_alpha_manual(values = c(0.5, 0.9)) +
+  theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95))
+```
+
+## use mi library draw heatmap and check missing value
+
+```{r echo=TRUE, fig.height=6}
+x <- mi::missing_data.frame(ds_data %>% as.data.frame())
+image(x)
+```
+
+show patterns of missing value 
+```{r}
+levels(x@patterns)
+```
+
+```{r echo=FALSE}
+summary(x@patterns)
+```
+
+```{r}
+missing_value_plot <- function(df, showcount=TRUE){
+  
+  missing_patterns <- data.frame(is.na(df)) %>%
+  group_by_all() %>%
+  count(name = "count", sort = TRUE) %>%
+  ungroup()
+  n_row =  nrow(df)
+  colname = colnames(df)
+
+  up_table <- missing_patterns %>% 
+      pivot_longer(-c(count), 
+                   names_to = "var",
+                   values_to = "missing") %>% 
+      mutate(temp = missing * count) %>%
+      group_by(var) %>%
+      summarise(total_row = sum(temp)) %>% 
+      arrange(-total_row) %>% 
+      mutate(percent_row = total_row/n_row*100,var = fct_inorder(var))
+  
+  if(showcount){
+    up_table %>%
+    ggplot(aes(x = var ,y = total_row))+
+    geom_col(show.legend = FALSE,fill="#4D65D0")+
+    labs(x="",y="num rows missing") +
+    scale_y_continuous(expand = c(0,0))+
+    theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95))  -> p1
+    
+  }else{
+    up_table %>%
+    ggplot(aes(x = var ,y = percent_row))+
+    geom_col(show.legend = FALSE,fill="#4D65D0")+
+    labs(x="",y="% rows missing") +
+    scale_y_continuous(expand = c(0,0),limits = c(0,100))+
+    theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95)) -> p1
+  }
+
+  var_seq = levels(fct_inorder(up_table$var))
+  
+  missing_patterns %>% 
+      arrange(-count) %>%
+      mutate(index = factor(1:n()),
+             percent_pat = count/n_row*100) ->  temp_1
+      temp_1 %>% select_at(var_seq) %>%
+      apply(1, sum) -> missing_sum
+  
+      temp_1 %>%
+      mutate(missing_sum = missing_sum,
+           complete_cases = ifelse(missing_sum == 0, T,F))   %>% 
+      select(c(index,percent_pat,count,complete_cases)) -> right_table
+  
+  if(showcount){
+    right_table %>%
+    ggplot(aes(x = count,y = fct_rev(index),fill=complete_cases))+
+    geom_col(show.legend = FALSE)+
+    scale_fill_manual(values = c("#4D65D0", "#2A22FF")) +
+    labs(x="row count",y="")+
+    scale_x_continuous(expand = c(0,0)) +
+    theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95))-> p2
+    
+  }else{
+    right_table %>%
+    ggplot(aes(x = percent_pat,y = fct_rev(index),fill=complete_cases))+
+    geom_col(show.legend = FALSE)+
+    scale_fill_manual(values = c("#4D65D0", "#2A22FF")) +
+    labs(x="% rows",y="")+
+    scale_x_continuous(expand = c(0,0),limits = c(0,100)) +
+    theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95)) -> p2 }
+    
+  central_table <- missing_patterns %>% 
+      arrange(-count) %>%
+      select_at(var_seq) %>% 
+      mutate(index = factor(1:n())) ->  temp_2
+      temp_2 %>% select_at(var_seq) %>%
+      apply(1, sum) -> missing_sum_1
+  
+    central_table <- temp_2 %>%
+      mutate(missing_sum_1 = missing_sum_1,
+           complete_cases = ifelse(missing_sum_1 == 0, T,F))   %>% 
+      pivot_longer(-c(index,complete_cases,missing_sum_1),names_to = "var", values_to = "missing") %>%
+      rename(feature = var) %>%
+      mutate(feature = factor(feature, levels = var_seq))
+ 
+  n = ceiling((length(var_seq))/2)
+
+  tibble(index = central_table %>% filter(complete_cases) %>% distinct(index) %>% pull(index),
+         feature = var_seq[n],
+         label = "complete cases") -> text
+  
+  
+  central_table %>% 
+    
+    ggplot() +
+    geom_tile(aes(x=feature,y=fct_rev(index),fill=factor(missing),alpha=complete_cases),
+              color = "white",show.legend = FALSE) + 
+    geom_text(data = text,
+              aes(x = feature, 
+                  y = index,
+                  label = label),
+              size = 6,
+              color = "black",
+              na.rm = TRUE)  +
+    labs(x = 'variable', y = 'missing pattern')+
+    scale_fill_manual(values = c("grey40", "purple")) +
+    scale_alpha_manual(values = c(0.5, 0.9)) +
+    theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95))-> p3
+    
+ layout<- "111111144
+  111111144
+  333333322
+  333333322
+  333333322
+  333333322
+  333333322
+  333333322
+  333333322"
+  print(p1+p2+p3 + plot_layout(design = layout))
+}
+
+```
+
+## draw the missing pattern plot using the function from homework
+```{r echo=FALSE, fig.width=15,fig.height=13}
+missing_value_plot(ds_data,showcount = F)
+```
+
+
+```{r echo=FALSE, fig.width=15,fig.height=13}
+missing_value_plot(ds_data,showcount = T)
+```
+
+The most frequent missing pattern is the pattern where Easy.apply and Competitors are both missing, while the other variables are not. Moreover, Easy.apply and Competitors are more likely to be missing in the dataset than the other variables. 
+
+While other values are missing, the values of Company.name, index, Job.Description, Job.Title, Location, Salary.Estimate, and X are all presenting in the dataset. 
+
+The features Industry and Sector seem to be missing at the same time. 
+
+The feature Founded seems to be an independent feature, its representing doesn't effect other feature’s status. 
+
+Complete cases only appears less than 100 rows while there are more than 2000 rows of data in the set.
+

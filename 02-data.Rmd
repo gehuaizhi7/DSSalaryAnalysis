@@ -1,2 +1,4 @@
 # Data sources
-#data link: comes from Glassdoor
+#data link: https://github.com/picklesueat/data_jobs_data
+
+
