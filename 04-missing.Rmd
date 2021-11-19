@@ -1,1 +1,10 @@
 # Missing values
+The most frequent missing pattern is the pattern where Easy.apply and Competitors are both missing, while the other variables are not. Moreover, Easy.apply and Competitors are more likely to be missing in the dataset than the other variables. 
+
+While other values are missing, the values of Company.name, index, Job.Description, Job.Title, Location, Salary.Estimate, and X are all presenting in the dataset. 
+
+The features Industry and Sector seem to be missing at the same time. 
+
+The feature Founded seems to be an independent feature, its representing doesn't effect other feature’s status. 
+
+Complete cases only appears less than 100 rows while there are more than 2000 rows of data in the set.
