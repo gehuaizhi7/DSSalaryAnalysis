@@ -2,6 +2,9 @@ introduction
 data-sources
 data-transformation
 missing-values
+load-data-preprocess-data
+missing-value-by-column
+choose-first-ten-company
 results
 interactive-component
 conclusion
