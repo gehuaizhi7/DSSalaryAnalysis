@@ -180,21 +180,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>convert ‘employee’ to col: lower_bound_employee, upper_bound_employee, avg_employee</li>
 </ul>
 <pre><code>## # A tibble: 6 × 23
-##   `Job Title`   low   high   `Job Description`  Rating `Company Name`
-##   &lt;chr&gt;         &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;               &lt;dbl&gt; &lt;chr&gt;         
-## 1 Senior Data … $111K $181K… &quot;ABOUT HOPPER\n\n…    3.5 &quot;Hopper\n3.5&quot; 
-## 2 Data Scienti… $111K $181K… &quot;At Noom, we use …    4.5 &quot;Noom US\n4.5&quot;
-## 3 Data Science… $111K $181K… &quot;Decode_M\n\nhttp…   NA   &quot;Decode_M&quot;    
-## 4 Data Analyst  $111K $181K… &quot;Sapphire Digital…    3.4 &quot;Sapphire Dig…
-## 5 Director, Da… $111K $181K… &quot;Director, Data S…    3.4 &quot;United Enter…
-## 6 Data Scienti… $111K $181K… &quot;Job Brief\n\nThe…    2.9 &quot;IFG Companie…
-## # … with 17 more variables: Location &lt;chr&gt;, Headquarters &lt;chr&gt;,
-## #   low_ppl &lt;chr&gt;, high_ppl &lt;chr&gt;, Founded &lt;int&gt;,
-## #   Type of ownership &lt;chr&gt;, Industry &lt;chr&gt;, Sector &lt;chr&gt;,
-## #   Revenue &lt;chr&gt;, Competitors &lt;chr&gt;, Easy Apply &lt;chr&gt;,
-## #   low_salary &lt;dbl&gt;, high_salary &lt;dbl&gt;, avg_salary &lt;dbl&gt;,
-## #   lower_bound_employee &lt;dbl&gt;, upper_bound_employee &lt;dbl&gt;,
-## #   avg_employee &lt;dbl&gt;</code></pre>
+##   `Job Title`   low   high   `Job Description`   Rating `Company Name`  Location
+##   &lt;chr&gt;         &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;                &lt;dbl&gt; &lt;chr&gt;           &lt;chr&gt;   
+## 1 Senior Data … $111K $181K… &quot;ABOUT HOPPER\n\nA…    3.5 &quot;Hopper\n3.5&quot;   New Yor…
+## 2 Data Scienti… $111K $181K… &quot;At Noom, we use s…    4.5 &quot;Noom US\n4.5&quot;  New Yor…
+## 3 Data Science… $111K $181K… &quot;Decode_M\n\nhttps…   NA   &quot;Decode_M&quot;      New Yor…
+## 4 Data Analyst  $111K $181K… &quot;Sapphire Digital …    3.4 &quot;Sapphire Digi… Lyndhur…
+## 5 Director, Da… $111K $181K… &quot;Director, Data Sc…    3.4 &quot;United Entert… New Yor…
+## 6 Data Scienti… $111K $181K… &quot;Job Brief\n\nThe …    2.9 &quot;IFG Companies… New Yor…
+## # … with 16 more variables: Headquarters &lt;chr&gt;, low_ppl &lt;chr&gt;, high_ppl &lt;chr&gt;,
+## #   Founded &lt;int&gt;, Type of ownership &lt;chr&gt;, Industry &lt;chr&gt;, Sector &lt;chr&gt;,
+## #   Revenue &lt;chr&gt;, Competitors &lt;chr&gt;, Easy Apply &lt;chr&gt;, low_salary &lt;dbl&gt;,
+## #   high_salary &lt;dbl&gt;, avg_salary &lt;dbl&gt;, lower_bound_employee &lt;dbl&gt;,
+## #   upper_bound_employee &lt;dbl&gt;, avg_employee &lt;dbl&gt;</code></pre>
 </div>
 <div id="missing-value-by-column" class="section level2" number="4.2">
 <h2><span class="header-section-number">4.2</span> missing value by column:</h2>

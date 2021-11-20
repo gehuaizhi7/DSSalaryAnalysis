@@ -1,16 +1,12 @@
----
-output: html_document
----
 # Missing values 
-
 
 ## load data & preprocess data
  
 - replace -1, Unknown/ Non-Applicable to NA 
 - convert 'Salary Estimate' to col: low_salary, high_salary, avg_salary
 - convert 'employee' to col: lower_bound_employee, upper_bound_employee, avg_employee
-```{r echo=FALSE}
 
+```{r echo=FALSE}
 # Basics
 if(!require(dplyr)) install.packages("dplyr")
 if(!require(tibble)) install.packages("tibble")
@@ -258,4 +254,3 @@ The features Industry and Sector seem to be missing at the same time.
 The feature Founded seems to be an independent feature, its representing doesn't effect other feature’s status. 
 
 Complete cases only appears less than 100 rows while there are more than 2000 rows of data in the set.
-
