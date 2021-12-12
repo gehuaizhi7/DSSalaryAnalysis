@@ -5,7 +5,6 @@ data link: https://github.com/picklesueat/data_jobs_data
 
 The data was collected from Glassdoor, an anonymous review service for current and past employees in the United States. On Glassdoor, users may anonymously post and view salaries, as well as search for and apply for jobs. Binghong Yu was responsible for collecting the data. We tried to scrap the website. however the api provided by Glassdoor was taken down and no longer available to the public. As a result, we failed to scrap the website. But we found the scraped data from GitHub, and downloaded it. 
 
-
 The dataset is created by picklesueat from Glassdoor. This repo contains four files, including: BusinessAnalyst.csv (4092x15), DataAnalyst.csv (5631x15), DataEngineer.csv (2528x15), and DataScientist.csv (3909x15).Each gives information about a branch of data related jobs. For each of them, there are 15 features: 'Job Title', 'Salary Estimate', 'Job Description', 'Rating', 'Company Name', Location', 'Headquarters', 'Size', 'Founded', 'Type of ownership', 'Industry', Sector', 'Revenue', 'Competitors', 'Easy Apply’.
 
 There were a few problems with the raw dataset, and we cleaned it so that it could giver much more clear information for the further analysis. 
