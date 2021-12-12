@@ -12,6 +12,8 @@ There were a few problems with the raw dataset, and we cleaned it so that it cou
 
 First of all, some of the data were classified as multiple job types, but we want 1-1 classsification. Therefore, we relabeled the data based on its job title and job description. 
 
+Then, due to scraping errors, company names are followed by its rating. We seperated the names and its rating. 
+
 Secondly, the value of salary feature contains words “GlassDoor estimated”. We only want the actual number of salary, so we deleted the words contained in the salary column and replaced "k", representing thousands, as "1,000".
 
 Thirdly, we modified job titles. For example, some of the job titles contains key words "Jr" and "Sr" while others uses "Junior" and "Senior". To make the data make more sense, we modified them to have the same representation. We made them follow a certain pattern to give a more clear information. 
