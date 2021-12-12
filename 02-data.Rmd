@@ -7,10 +7,13 @@ The data was collected from Glassdoor, an anonymous review service for current a
 
 
 The dataset is created by picklesueat from Glassdoor. This repo contains four files, including: BusinessAnalyst.csv (4092x15), DataAnalyst.csv (5631x15), DataEngineer.csv (2528x15), and DataScientist.csv (3909x15).Each gives information about a branch of data related jobs. For each of them, there are 15 features: 'Job Title', 'Salary Estimate', 'Job Description', 'Rating', 'Company Name', Location', 'Headquarters', 'Size', 'Founded', 'Type of ownership', 'Industry', Sector', 'Revenue', 'Competitors', 'Easy Apply’.
+
 There were a few problems with the raw dataset, and we cleaned it so that it could giver much more clear information for the further analysis. 
 
-First of all, the value of salary feature contains words “GlassDoor estimated”. We only want the actual number of salary, so we deleted the words contained in the salary column and replaced "k", representing thousands, as "1,000".
+First of all, some of the data were classified as multiple job types, but we want 1-1 classsification. Therefore, we relabeled the data based on its job title and job description. 
 
-Secondly, we modified job titles. For example, some of the job titles contains key words "Jr" and "Sr" while others uses "Junior" and "Senior". To make the data make more sense, we modified them to have the same representation. We made them follow a certain pattern to give a more clear information. 
+Secondly, the value of salary feature contains words “GlassDoor estimated”. We only want the actual number of salary, so we deleted the words contained in the salary column and replaced "k", representing thousands, as "1,000".
 
-Thirdly, we modified number of employer. For some of the data, number of employers was represented by a range, while others were represented by a specific number. This made the analysis more complicated. We take mean of the range and let the mean to be the new value of this feature. 
+Thirdly, we modified job titles. For example, some of the job titles contains key words "Jr" and "Sr" while others uses "Junior" and "Senior". To make the data make more sense, we modified them to have the same representation. We made them follow a certain pattern to give a more clear information. 
+
+Finally, we modified number of employer. For some of the data, number of employers was represented by a range, while others were represented by a specific number. This made the analysis more complicated. We take mean of the range and let the mean to be the new value of this feature. 
