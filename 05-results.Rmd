@@ -367,3 +367,46 @@ data2 %>%
 
 ```
 
+
+## Employee Salary Group VS Company Revenue Level - Mosaic Plot
+```{r}
+data <- read_excel("data/clean_data.xlsx")
+
+data %>%
+  drop_na(Revenue) %>%
+  mutate(revenue_level = case_when(
+      Revenue =="$10+ billion (USD)" ~ "High(>1b)",
+      Revenue =="$5 to $10 billion (USD)" ~ "High(>1b)",
+      Revenue =="$2 to $5 billion (USD)" ~ "High(>1b)",
+      Revenue =="$1 to $2 billion (USD)" ~ "High(>1b)",
+      Revenue =="$500 million to $1 billion (USD)" ~ "Mid(25m~1b)",
+      Revenue =="$100 to $500 million (USD)" ~ "Mid(25m~1b)",
+      Revenue =="$50 to $100 million (USD)" ~ "Mid(25m~1b)",
+      Revenue =="$25 to $50 million (USD)" ~ "Mid(25m~1b)",
+      Revenue =="$10 to $25 million (USD)" ~ "Low(<25m)",
+      Revenue =="$5 to $10 million (USD)" ~ "Low(<25m)",
+      Revenue =="$1 to $5 million (USD)" ~ "Low(<25m)",
+      Revenue =="Less than $1 million (USD)" ~ "Low(<25m)"
+    )) -> data_revenue
+
+data_revenue %>% 
+  drop_na(`Avg_salary(k)`) %>%
+  mutate(salary_group = if_else(`Avg_salary(k)`>100,"High(>100k)",
+                            if_else(`Avg_salary(k)`<80,"low(<90K)","medium(80~100K)"))) -> data_revenue_salary
+
+data_revenue_salary %>% 
+  mutate(salary_group = factor(salary_group,levels = c("High(>100k)","medium(80~100K)","low(<90K)"))) %>% 
+  mutate(revenue_level = factor(revenue_level,levels = c("Low(<25m)","Mid(25m~1b)","High(>1b)"))) %>% 
+  vcd::mosaic(salary_group~revenue_level, .,
+              shade = TRUE,
+              direction = c("v","h"),
+              highlighting_fill = RColorBrewer::brewer.pal(3, "Blues"),
+              spacing = vcd::spacing_dimequal(c(.3, 0, 0)),
+              labeling = labeling_border(tl_labels = c(FALSE, TRUE),
+                                       rot_labels = c(0, 0, 0, 0),
+                                       offset_varnames = c(0,0,0,2),
+                                       offset_labels = c(0,0,0,1)),
+             main = "Employee Salary Group v.s. Company Revenue Level")
+```
+
+
