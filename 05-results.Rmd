@@ -333,48 +333,37 @@ data%>%
 
 revenue vs salary
 
-```{r}
-
-data %>% 
-  drop_na(`job_type_yubinghong`)%>% 
-  group_by(`job_type_yubinghong`,`Name of Company`)%>% 
-  summarise(n = n()) %>%
-  arrange(-n) 
-  summarise(salary_jobT= mean_ybh(`Avg_salary(k)`))
-
-
-data%>% 
-  drop_na(`Name of Company`)%>% 
-  group_by(`Name of Company`)%>% 
-  summarise(n = n()) %>%
-  arrange(-n) %>%
-  mutate(company_label = ifelse(min_rank(-n) <=20, `Name of Company`, "Others") %>%
-  factor %>% fct_relevel("Others", after=Inf)) -> company_to_label_map
-
-data %>%
-  left_join(company_to_label_map) -> company_data 
-
-company_data%>% 
-  ggplot(aes(x=mean_job$salary_jobT,
-             y=fct_reorder2(state, mean_job$salary_jobT, .desc = FALSE) 
-
-ggplot(belts, aes(x = fatalities, y = fct_reorder2(state, year == 1997, fatalities, .desc = FALSE), color = year)) +
-  geom_point() +
-  ggtitle("# of fatalities per million traffic miles") +
-  ylab("") +
-  theme_linedraw()
-
-
-  geom_density_ridges(alpha=0.6)  + 
-  labs(title = 'Company vs salary') + 
-  labs(y = "Salary") +
-  labs(x = 'Company') +
-  center_title + 
-  theme_ridges() + 
-  theme(legend.position = "none") 
-```
 
 
 title vs industry/sector
 
+
+
+
+## Alluvial plot (Sector, Type of ownership, salary_group)
+```{r,fig.height=20,fig.width=30}
+library("readxl")
+# xls files
+data <- read_excel("data/clean_loc.xlsx")
+
+data %>% 
+  drop_na(`Type of ownership`) %>% 
+  drop_na(Sector) %>% 
+  drop_na(`Avg_salary(k)`) ->data2
+
+data2 %>% 
+  mutate(salary_group = if_else(`Avg_salary(k)`>100,"high",
+                            if_else(`Avg_salary(k)`<70,"low","medium"))) ->data2
+
+data2 %>% 
+  group_by(Sector,`Type of ownership`,salary_group) %>% 
+  summarize(n = n()) %>% 
+  filter(n>100) %>% 
+  ggplot(aes(axis1 = Sector, axis2 = `Type of ownership`, axis3 = salary_group, y = n)) +
+  geom_alluvium(aes(fill = salary_group),color = "black") +
+  geom_stratum() +
+  geom_text(stat = "stratum", aes(label = paste(after_stat(stratum), "\n", after_stat(count))),size=5) +
+  scale_x_discrete(limits = c("Sector", "Type of ownership", "salary_group")) 
+
+```
 
