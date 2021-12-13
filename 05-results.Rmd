@@ -4,7 +4,7 @@ editor_options:
   chunk_output_type: console
 ---
 # Results
-```{r echo=FALSE}
+```{r include=FALSE}
 # Basics
 if(!require(dplyr)) install.packages("dplyr")
 if(!require(tibble)) install.packages("tibble")
@@ -38,6 +38,7 @@ if(!require(gridExtra)) install.packages("gridExtra")
 
 library("data.table")
 library(mi)
+theme(plot.title = element_text(hjust=0.5))  -> center_title
 ```
 
 ```{r}
@@ -55,15 +56,16 @@ mean_ybh <- function(x) mean(x,na.rm = T)
 ```
 
 ```{r}
-
 # Loading
 library("readxl")
-# xls files
-data <- read_excel("data/clean_loc.xlsx")
-split(data, data$job_type_yubinghong) -> datas
+data <- read_excel("/Users/binghongyu/Desktop/DSSalaryAnalysis/data/clean_loc.xlsx")
+split(data, data$job_type) -> datas
 ```
 
 ## Skill set vs salary
+
+
+###find skill set 
 ```{r}
 # turn into lower case
 data%>% 
@@ -91,22 +93,20 @@ for(tech_require in tech_requires3){
                                                   `lower_jd`), 1, 0)) 
 }
 
-
 data %>% 
-  mutate(require_sklearn = max(`require_scikit-learn`,
+  rowwise()  %>% 
+  mutate(require_scikit_learn = max(`require_scikit-learn`,
                                `require_sklearn`,
                                `require_scikit[[:space:]]learn`,
                                na.rm=T)) %>%
+  ungroup()%>%
   select(-`require_scikit-learn`,
          -`require_sklearn`,
-         `require_scikit[[:space:]]learn`)-> data_2
+         -`require_scikit[[:space:]]learn`)-> data_2 
 
-data_2 %>%
-  writeEXCEL("data_2.xlsx")
-
-data_2%>%
-  filter(require_r !=0) %>%
-  select(`Job Description`)  
+# data_2%>%
+#   filter(require_r !=0) %>%
+#   select(`Job Description`)  
 
 data_2 %>%
   select(`Avg_salary(k)`, contains("require_")) %>%
@@ -120,12 +120,15 @@ data_2 %>%
 skill_data %>%
   group_by(Tech)%>%
   summarise(freq=n())%>%
-  arrange(-freq)-> skill_count
+  arrange(-freq)-> skill_count  
 
 median_ybh <- function(x) median(x,na.rm=T)
 #skill_data %>%
  # writeEXCEL("skill_data.xlsx")
+```
 
+### draw box plot for skillset vs salary
+```{r,fig.width = 15, fig.height = 10}
 skill_data %>%
   mutate(rank = fct_reorder(Tech, 
                             `Avg_salary(k)`, 
@@ -138,7 +141,26 @@ skill_data %>%
   labs(title = "Skill set vs salary") +
   labs(x = "Skill set") +
   labs(y = "Average salary in k")
+#scale_y_continuous(
+```
 
+## draw ridgeline for skill set vs salary
+```{r,fig.width = 15, fig.height = 10}
+skill_data %>%
+  mutate(rank = fct_reorder(Tech, 
+                            `Avg_salary(k)`, 
+                            median_ybh))%>%
+  ggplot(aes(y = rank,
+      x = `Avg_salary(k)`, fill = rank))+
+  geom_density_ridges(alpha=0.6)  + 
+  labs(title = 'Industry vs salary') + 
+  labs(x = "Salary") +
+  labs(y = 'skill') +
+  theme(plot.title = element_text(hjust=0.5)) +
+  theme_ridges() + 
+  theme(legend.position = "none") 
+#scale_x_continuous(
+  
 ```
 
 ```{r}
@@ -154,72 +176,112 @@ skill_count %>%
   as.data.frame() -> df_word
 
 rownames(df_word) <- df_word$Tech
-wordcloud2(df_word , size = 2, shape = 'movie') 
+wordcloud2(df_word , size = 2, shape = 'data') 
 ```
 
 ## salary vs job title 
-```{r}
+```{r,fig.width = 15, fig.height = 10}
 data %>%
-  drop_na(job_type_yubinghong)   %>% 
+  drop_na(job_type)   %>% 
   mutate_if(is.numeric, ~replace(., is.na(.), 0))  %>% 
   ggplot(aes(y=`Avg_salary(k)`, 
-             x = job_type_yubinghong,
-             fill = job_type_yubinghong)) +
+             x = job_type,
+             fill = job_type)) +
   geom_boxplot() +
   labs(title = 'Average salary for job titles') + 
   labs(x = "Job titile") +
-  labs(y = 'average salary in k unit ') +
+  labs(y = 'Average salary in unit k') +
   center_title
 ```
 This plot compares salary for four job titles, filled with four colors to seperate the job title.
 
-##
+## education vs salary
+### prepare data for education
 ```{r}
 data%>% 
-  mutate(lower_jd = tolower(`Job Description`)) -> data
+  mutate(lower_jd = tolower(`Job Description`))%>% 
+  select("Job Title","lower_jd","Sector","Low_salary(k)","High_salary(k)","Avg_salary(k)") -> data_lower
 
-c("bacherlor" ,"master","phd")  -> academics
+c("bacherlor" ,"undergraduate","undergrad","undergraduate[[:space:]]student") -> undergrads
+c("master","grad","graduate[[:space:]]student") -> grads
+c("phd","doctorate","doctor")  -> phds
 
-for(academic in academics){
-  new_column_name = paste0("require_", academic)
-  data %>%
-    mutate(!!sym(new_column_name) := ifelse(grepl(academic, 
-                                                  `lower_jd`), 1, 0))-> data_3
+for(undergrad in undergrads){
+  new_column_name = paste0("require_", undergrad)
+  data_lower %<>%
+    mutate(!!sym(new_column_name) := ifelse(grepl(undergrad, 
+                                                `lower_jd`), 1, 0))
+}
+
+for(grad in grads){
+  new_column_name = paste0("require_", grad)
+  data_lower %<>%
+    mutate(!!sym(new_column_name) := ifelse(grepl(grad, 
+                                                  `lower_jd`), 1, 0))
+}
+
+for(phd in phds){
+  new_column_name = paste0("require_", phd)
+  data_lower %<>%
+    mutate(!!sym(new_column_name) := ifelse(grepl(phd, 
+                                                  `lower_jd`), 1, 0))
 }
 
 
-data_3%>%
+data_lower %>%  
+  rowwise()  %>% 
+  mutate(require_Phd = max(`require_phd`,`require_doctorate`,`require_doctor`,
+                               na.rm=T)) %>% 
+  mutate(require_Master = max(`require_master`,
+                               `require_grad`,
+                               `require_graduate[[:space:]]student`,
+                               na.rm=T)) %>%
+  mutate(require_Bacherlor = max(`require_bacherlor`,
+                               `require_undergraduate`,
+                               `require_undergrad`,
+                               `require_undergraduate[[:space:]]student`,
+                               na.rm=T)) %>% 
+  ungroup() %>% 
+  select(-`require_phd`,-`require_doctorate`,-`require_doctor`) %>%
+  select(-`require_master`, 
+         -`require_grad`, 
+         -`require_graduate[[:space:]]student`) %>%
+  select(-`require_bacherlor`,
+         -`require_undergraduate`,
+         -`require_undergrad`,
+         -`require_undergraduate[[:space:]]student`)-> data_academic   
+
+data_academic%>% 
   select(`Avg_salary(k)`, contains("require_")) %>%
   pivot_longer(2:ncol(.),
-               names_to = "Academic") %>% 
-  mutate(Tech = gsub("require_", "", Academic)) %>%
-  #mutate(Tech = gsub("[[:space:]]+", " ", Tech)) %>%
-  #mutate(Tech = gsub("\\[\\[\\:space\\:\\]\\]", " ", Tech)) %>%
-  filter(value !=0) -> academic_data
+               names_to = "Academic")%>% 
+  mutate(Academic = gsub("require_", "", Academic)) %>%
+  mutate(Academic = gsub("[[:space:]]+", " ", Academic)) %>%
+  mutate(Academic = gsub("\\[\\[\\:space\\:\\]\\]", " ", Academic)) %>%
+  filter(value !=0) -> data_academics 
 
 
 median_ybh <- function(x) median(x,na.rm=T)
+```
 
-#academic_data %>%
-#  writeEXCEL("skill_data.xlsx")
-
-academic_data %>%
+#plot based on education vs salary
+```{r,fig.width = 15, fig.height = 10}
+data_academics %>% 
   mutate(ranking = fct_reorder(Academic, 
                             `Avg_salary(k)`, 
                             median_ybh))%>%
   ggplot(aes(x = ranking,
       y = `Avg_salary(k)`, fill = ranking))+
   geom_boxplot() +
-  theme(axis.text.x = element_text(hjust=0.8, angle=30)) +
   center_title + 
-  labs(title = "Skill set vs salary") +
-  labs(x = "Skill set") +
-  labs(y = "Average salary in k")
+  labs(title = "Education vs salary") +
+  labs(x = "Education") +
+  labs(y = "Average salary in unit k")
 
 ```
 
 ## company size vs salary 不行！重来
-```{r}
+```{r,fig.width = 15, fig.height = 10}
 data%>% 
   drop_na(Size)%>% 
   ggplot(aes(x=fct_reorder(Size, `Avg_salary(k)`,median_ybh), 
@@ -229,32 +291,15 @@ data%>%
   labs(y = "Salary") +
   labs(x = 'Average company employee') +
   center_title
-  
 
 ```
 
-```{r}
+##ridge line for top 10 indutry vs salary
+
+### prepare data
+```{r,fig.width = 15, fig.height = 10}
 data%>% 
-  drop_na(Size)%>% 
-  ggplot(aes(y=fct_reorder(Size, `Avg_salary(k)`,median_ybh), 
-             x=`Avg_salary(k)`)) + 
-  geom_point() + 
-  labs(title = 'Company size (employee number) vs salary') + 
-  labs(y = "Salary") +
-  labs(x = 'Average company employee') +
-  center_title
-  
-
-#found year
-
-```
-
-
-
-
-```{r}
-data%>% 
-  drop_na(Industry)%>% 
+  drop_na(Industry) %>% 
   group_by(Industry)%>% 
   summarise(n = n()) %>%
   arrange(-n) %>%
@@ -262,81 +307,182 @@ data%>%
   factor %>% fct_relevel("Others", after=Inf)) -> industry_to_label_map
 
 data %>%
-  left_join(industry_to_label_map) -> industry_data
-  
+  right_join(industry_to_label_map) -> industry_data
+```
 
+### plot ridge line for top 10 indutry vs salary
+```{r,fig.width = 15, fig.height = 10}
 industry_data%>% 
   ggplot(aes(y=fct_reorder(industry_label, `Avg_salary(k)`,median_ybh) %>%
                fct_relevel("Others", after=Inf),
              x=`Avg_salary(k)`, fill = industry_label)) + 
   geom_density_ridges(alpha=0.6)  + 
   labs(title = 'Industry vs salary') + 
-  labs(y = "Salary") +
-  labs(x = 'Industry') +
-  center_title + 
+  labs(x = "Salary") +
+  labs(y = 'Industry') +
+  theme(plot.title = element_text(hjust=0.5)) +
   theme_ridges() + 
   theme(legend.position = "none") 
 
 ```
 
+### plot box plot  for top 10 indutry vs salary
+```{r,fig.width = 15, fig.height = 10}
+industry_data%>% 
+  ggplot(aes(x=fct_reorder(industry_label, `Avg_salary(k)`,median_ybh) %>%
+               fct_relevel("Others", after=Inf),
+             y=`Avg_salary(k)`, fill = industry_label)) + 
+  geom_boxplot() + 
+  labs(title = 'Industry vs salary') + 
+  theme(axis.text.x = element_text(hjust=0.9, angle=20)) +
+  labs(x = "Salary") +
+  labs(y = 'Industry') +
+  center_title
+   
+```
 
+## ridge line for sector vs salary
+### prepare data
 ```{r}
-
 data%>% 
   drop_na(Sector)%>% 
   group_by(Sector)%>% 
   summarise(n = n()) %>%
   arrange(-n) %>%
-  mutate(industry_label = ifelse(min_rank(-n) <=10, Industry, "Others") %>%
-  factor %>% fct_relevel("Others", after=Inf)) -> industry_to_label_map
+  mutate(sector_label = ifelse(min_rank(-n) <=30, Sector, "Others") %>%
+  factor %>% fct_relevel("Others", after=Inf)) -> sector_to_label_map
 
 data %>%
-  left_join(industry_to_label_map) -> industry_data
-  
+  right_join(sector_to_label_map) -> sector_data
+```
 
-industry_data%>% 
-  ggplot(aes(y=fct_reorder(industry_label, `Avg_salary(k)`,median_ybh) %>%
+### ridge line for sector for
+```{r,fig.width = 15, fig.height = 10}
+sector_data%>% 
+  ggplot(aes(y=fct_reorder(sector_label, `Avg_salary(k)`,median_ybh) %>%
                fct_relevel("Others", after=Inf),
-             x=`Avg_salary(k)`, fill = industry_label)) + 
+             x=`Avg_salary(k)`, fill = sector_label)) + 
   geom_density_ridges(alpha=0.6)  + 
-  labs(title = 'Industry vs salary') + 
+  labs(title = 'Sector vs salary') + 
   labs(y = "Salary") +
-  labs(x = 'Industry') +
+  labs(x = 'Sector') +
   center_title + 
   theme_ridges() + 
-  theme(legend.position = "none") 
+  theme(legend.position = "none")
+```
 
-data%>% 
-  drop_na(Sector)%>% 
-  ggplot(aes(x=fct_reorder(Sector, `Avg_salary(k)`,median_ybh),
-             y=`Avg_salary(k)`,fill = Sector)) + 
+### box plot for sector vs salary
+```{r,fig.width = 15, fig.height = 10}
+sector_data%>% 
+  ggplot(aes(x=fct_reorder(sector_label, `Avg_salary(k)`,median_ybh) %>%
+               fct_relevel("Others", after=Inf),
+             y=`Avg_salary(k)`, fill = sector_label))+ 
   geom_boxplot() + 
-  labs(title = 'Company size (employee number) vs salary') + 
+  theme(axis.text.x = element_text(hjust=0.9, angle=25)) +
+  labs(title = 'Sector vs salary') + 
   labs(y = "Salary") +
-  labs(x = 'Average company employee') +
+  labs(x = 'Sector') +
   center_title
 ```
 
+###founded year vs salary
+```{r,fig.width = 15, fig.height = 10}
 
-```{r}
 data%>% 
   drop_na(Founded)%>% 
   ggplot(aes(x=`Founded`,
              y=`Avg_salary(k)`)) +
-  facet_wrap(~job_type_yubinghong) + 
-  geom_point(alpha = 0.15,size = 0.25) + 
-  labs(title = 'Company size (employee number) vs salary') + 
+  facet_wrap(~job_type) + 
+  geom_point(alpha = 0.15,size = 0.5) + 
+  labs(title = 'Company founded year vs salary') + 
   labs(y = "Salary") +
-  labs(x = 'Average company employee') +
+  labs(x = 'Company founded year') +
   center_title
+
+
+
+data%>% 
+  drop_na(Founded)%>% 
+  ggplot(aes(x=`Founded`,
+             y=`Avg_salary(k)`)) +
+  facet_wrap(~Sector) + 
+  geom_point(alpha = 0.15,size = 0.5) + 
+  labs(title = 'Company founded year vs salary') + 
+  labs(y = "Salary") +
+  labs(x = 'Company founded year') +
+  center_title
+
+
+
+data%>% 
+  drop_na(Founded)%>% 
+  ggplot(aes(x=`Founded`,
+             y=`Avg_salary(k)`,color = job_type)) +
+  facet_wrap(~Sector) + 
+  geom_point(alpha = 0.15,size = 0.5) + 
+  labs(title = 'Company founded year vs salary') + 
+  labs(y = "Salary") +
+  labs(x = 'Company founded year') +
+  center_title
+
+
 ```
 
-revenue vs salary
+##company vs salary
+### parepare data
+```{r}
+data %>% 
+  group_by(`Name of Company`) %>%
+  summarise(n= n()) %>%
+  mutate(company_label = ifelse(min_rank(-n) <=20, `Name of Company`, "Others") %>%
+  factor %>% fct_relevel("Others", after=Inf)) -> company_to_label_map
+
+data %>%
+  left_join(company_to_label_map) -> company_data
+
+company_data%>%  
+  drop_na(`job_type`)%>% 
+ # filter(company_label !== "Others") %>%
+  group_by(`job_type`,company_label)%>% 
+  mutate(salary_jobT= mean_ybh(`Avg_salary(k)`)) %>% 
+  arrange(-salary_jobT) %>% 
+  select(company_label,`job_type`,salary_jobT)%>%
+  filter(company_label != "Others") -> data_company
+  
+
+```
+
+### company vs salary
+```{r,fig.width = 15, fig.height = 10}
+data_company%>%
+  ggplot(aes(x=salary_jobT,
+            y=fct_reorder(company_label, salary_jobT,median_ybh),
+            color = `job_type`))+
+  geom_point(size = 2)  + 
+  labs(title = 'Company vs salary') + 
+  labs(y = "Company") +
+  labs(x = 'Salary') +
+  center_title 
+```
 
 
-
-title vs industry/sector
-
+##rating vs salary wrap up by industry, color by job title 
+```{r,fig.width = 15, fig.height = 10}
+data%>% 
+  drop_na(Rating)%>% 
+  drop_na(Sector)%>% 
+  drop_na(job_type)%>% 
+  ggplot(aes(x=`Rating`,
+             y=`Avg_salary(k)`, color = `job_type`)) +
+  facet_wrap(~Sector) + 
+  geom_point(alpha = 0.2,size = 0.8) + 
+  labs(title = 'Rating vs salary wrap up by industry, color by job title ') + 
+  labs(y = "Average salary") +
+  labs(x = 'Rating') +
+  center_title
+  
+  
+```
 
 
 
@@ -407,6 +553,5 @@ data_revenue_salary %>%
                                        offset_varnames = c(0,0,0,2),
                                        offset_labels = c(0,0,0,1)),
              main = "Employee Salary Group v.s. Company Revenue Level")
-```
 
 

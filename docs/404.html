@@ -24,7 +24,7 @@
 <meta name="author" content="Huaizhi Ge, Huanyu Jiang and Binghong Yu" />
 
 
-<meta name="date" content="2021-12-12" />
+<meta name="date" content="2021-12-13" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -53,6 +53,11 @@
 
 <link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<script src="libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="libs/wordcloud2-0.0.1/wordcloud.css" rel="stylesheet" />
+<script src="libs/wordcloud2-0.0.1/wordcloud2-all.js"></script>
+<script src="libs/wordcloud2-0.0.1/hover.js"></script>
+<script src="libs/wordcloud2-binding-0.2.1/wordcloud2.js"></script>
 
 
 
@@ -75,7 +80,15 @@
 <li class="divider"></li>
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a></li>
 <li class="chapter" data-level="2" data-path="data-sources.html"><a href="data-sources.html"><i class="fa fa-check"></i><b>2</b> Data sources</a></li>
-<li class="chapter" data-level="3" data-path="data-transformation.html"><a href="data-transformation.html"><i class="fa fa-check"></i><b>3</b> Data transformation</a></li>
+<li class="chapter" data-level="3" data-path="data-transformation.html"><a href="data-transformation.html"><i class="fa fa-check"></i><b>3</b> Data transformation</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="data-transformation.html"><a href="data-transformation.html#get-new-job-title-using-speical-character-in-title-and-description"><i class="fa fa-check"></i><b>3.1</b> Get new job title using speical character in title and description</a></li>
+<li class="chapter" data-level="3.2" data-path="data-transformation.html"><a href="data-transformation.html#plot-distribution-of-four-new-lableed-job-title"><i class="fa fa-check"></i><b>3.2</b> plot distribution of four new lableed Job title</a></li>
+<li class="chapter" data-level="3.3" data-path="data-transformation.html"><a href="data-transformation.html#get-data-with-updated-job-title"><i class="fa fa-check"></i><b>3.3</b> get data with updated job title</a></li>
+<li class="chapter" data-level="3.4" data-path="data-transformation.html"><a href="data-transformation.html#find-all-missing-value-replaced-with-na-clean-company-name-seperate-salary-estimate-into-min-max-and-avg-of-salary"><i class="fa fa-check"></i><b>3.4</b> find all missing value, replaced with NA, clean company name, seperate salary estimate into min, max and avg of salary</a></li>
+<li class="chapter" data-level="3.5" data-path="data-transformation.html"><a href="data-transformation.html#take-out-state-from-location-column"><i class="fa fa-check"></i><b>3.5</b> take out state from location column</a></li>
+<li class="chapter" data-level="3.6" data-path="data-transformation.html"><a href="data-transformation.html#save-as-xlsx-file"><i class="fa fa-check"></i><b>3.6</b> save as xlsx file</a></li>
+</ul></li>
 <li class="chapter" data-level="4" data-path="missing-values.html"><a href="missing-values.html"><i class="fa fa-check"></i><b>4</b> Missing values</a>
 <ul>
 <li class="chapter" data-level="4.1" data-path="missing-values.html"><a href="missing-values.html#load-data-preprocess-data"><i class="fa fa-check"></i><b>4.1</b> load data &amp; preprocess data</a></li>
@@ -84,7 +97,33 @@
 <li class="chapter" data-level="4.4" data-path="missing-values.html"><a href="missing-values.html#use-mi-library-draw-heatmap-and-check-missing-value"><i class="fa fa-check"></i><b>4.4</b> use mi library draw heatmap and check missing value</a></li>
 <li class="chapter" data-level="4.5" data-path="missing-values.html"><a href="missing-values.html#draw-the-missing-pattern-plot-using-the-function-from-homework"><i class="fa fa-check"></i><b>4.5</b> draw the missing pattern plot using the function from homework</a></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i><b>5</b> Results</a></li>
+<li class="chapter" data-level="5" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i><b>5</b> Results</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="results.html"><a href="results.html#skill-set-vs-salary"><i class="fa fa-check"></i><b>5.1</b> Skill set vs salary</a>
+<ul>
+<li class="chapter" data-level="5.1.1" data-path="results.html"><a href="results.html#draw-box-plot-for-skillset-vs-salary"><i class="fa fa-check"></i><b>5.1.1</b> draw box plot for skillset vs salary</a></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="results.html"><a href="results.html#draw-ridgeline-for-skill-set-vs-salary"><i class="fa fa-check"></i><b>5.2</b> draw ridgeline for skill set vs salary</a></li>
+<li class="chapter" data-level="5.3" data-path="results.html"><a href="results.html#wordcloud-for-skillset"><i class="fa fa-check"></i><b>5.3</b> wordcloud for skillset</a></li>
+<li class="chapter" data-level="5.4" data-path="results.html"><a href="results.html#salary-vs-job-title"><i class="fa fa-check"></i><b>5.4</b> salary vs job title</a></li>
+<li class="chapter" data-level="5.5" data-path="results.html"><a href="results.html#education-vs-salary"><i class="fa fa-check"></i><b>5.5</b> education vs salary</a>
+<ul>
+<li class="chapter" data-level="5.5.1" data-path="results.html"><a href="results.html#prepare-data-for-education"><i class="fa fa-check"></i><b>5.5.1</b> prepare data for education</a></li>
+</ul></li>
+<li class="chapter" data-level="5.6" data-path="results.html"><a href="results.html#company-size-vs-salary-不行重来"><i class="fa fa-check"></i><b>5.6</b> company size vs salary 不行！重来</a>
+<ul>
+<li class="chapter" data-level="5.6.1" data-path="results.html"><a href="results.html#prepare-data"><i class="fa fa-check"></i><b>5.6.1</b> prepare data</a></li>
+<li class="chapter" data-level="5.6.2" data-path="results.html"><a href="results.html#plot-ridge-line-for-top-10-indutry-vs-salary"><i class="fa fa-check"></i><b>5.6.2</b> plot ridge line for top 10 indutry vs salary</a></li>
+<li class="chapter" data-level="5.6.3" data-path="results.html"><a href="results.html#plot-box-plot-for-top-10-indutry-vs-salary"><i class="fa fa-check"></i><b>5.6.3</b> plot box plot for top 10 indutry vs salary</a></li>
+</ul></li>
+<li class="chapter" data-level="5.7" data-path="results.html"><a href="results.html#ridge-line-for-sector-vs-salary"><i class="fa fa-check"></i><b>5.7</b> ridge line for sector vs salary</a>
+<ul>
+<li class="chapter" data-level="5.7.1" data-path="results.html"><a href="results.html#prepare-data-1"><i class="fa fa-check"></i><b>5.7.1</b> prepare data</a></li>
+<li class="chapter" data-level="5.7.2" data-path="results.html"><a href="results.html#ridge-line-for-sector-for"><i class="fa fa-check"></i><b>5.7.2</b> ridge line for sector for</a></li>
+<li class="chapter" data-level="5.7.3" data-path="results.html"><a href="results.html#box-plot-for-sector-vs-salary"><i class="fa fa-check"></i><b>5.7.3</b> box plot for sector vs salary</a></li>
+<li class="chapter" data-level="5.7.4" data-path="results.html"><a href="results.html#company-vs-salary"><i class="fa fa-check"></i><b>5.7.4</b> company vs salary</a></li>
+</ul></li>
+</ul></li>
 <li class="chapter" data-level="6" data-path="interactive-component.html"><a href="interactive-component.html"><i class="fa fa-check"></i><b>6</b> Interactive component</a></li>
 <li class="chapter" data-level="7" data-path="conclusion.html"><a href="conclusion.html"><i class="fa fa-check"></i><b>7</b> Conclusion</a></li>
 <li class="divider"></li>

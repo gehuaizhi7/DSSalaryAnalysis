@@ -93,12 +93,12 @@ inner_join(
   by = "Job Description"
 ) %>% unique %>%
   arrange_at("Job Title.x")
-  #writeEXCEL("temp.xlsx")
+  
 
   
 ```
  
- 
+## Get new job title using speical character in title and description
 ```{r}
 bind_rows(
   df_ba,
@@ -107,7 +107,6 @@ bind_rows(
   df_ds
 ) %>% 
   distinct(`Job Title`, `Job Description`, `Company Name`) %>%
-  # 标记关键词
   mutate(is_de_byjd = ifelse(grepl("Data Engineer|Big Data|data engineer|Data engineer|data Engineer", `Job Description`), 1, 0)) %>%
   mutate(is_de_byjt = ifelse(grepl("Data Engineer|DE|Big Data", `Job Title`, ignore.case = T), 1, 0)) %>%
   
@@ -131,7 +130,7 @@ df_labeled %>%
   pull(name)  #give sequence 
 
 df_labeled %>%
-  mutate(job_type_yubinghong = case_when(
+  mutate(job_type = case_when(
     is_ds_byjt == 1 ~ "DS",
     is_de_byjt == 1 ~ "DE",
     is_ba_byjt == 1 ~ "BA",
@@ -143,16 +142,23 @@ df_labeled %>%
     is_da_byjd == 1 ~ "DA"
 
   )) %>% #Job title is more accurate than JD
-  select(`Job Title`, `Job Description`, `Company Name`, job_type_yubinghong) -> unique_mapper
+  select(`Job Title`, `Job Description`, `Company Name`, job_type) -> unique_mapper
+```
 
-# 一对一
+## plot distribution of four new lableed Job title
+```{r}
+# one to one
 unique_mapper %>%
 ggplot() +
-  aes(x =  job_type_yubinghong) +
-  geom_histogram(stat="count")
+  aes(x =  job_type) +
+  geom_histogram(stat="count") +
+  labs(title = 'Count of four new job label', x = "Job title") +
+  center_title
+```
 
 
-# 一对多
+```{r}
+# one to many label
 df_labeled %>%
   rowwise() %>%
   mutate(is_ba = max(is_ba_byjt, is_ba_byjd)) %>%
@@ -170,6 +176,7 @@ ggplot() +
   geom_histogram(stat="count")
 ```
  
+## get data with updated job title
 ```{r}
 bind_rows(
   df_ba %>% mutate(file_Type = "BA"),
@@ -183,6 +190,7 @@ bind_rows(
 ```
 
 
+## find all missing value, replaced with NA, clean company name, seperate salary estimate into min, max and avg of salary
 ```{r}
 clean_jobT %>%
   select(1:ncol(.))%>%
@@ -202,14 +210,9 @@ clean_jobT %>%
         "Avg_salary(k)" = avg_salary) %>%  
   select(c(-low,-high))-> clean_data  
 
-
 ```
 
-```{r}
-split(clean_data, ~job_type_yubinghong) -> clean_datas
-#split based on four job title 
-```
-
+## take out state from location column
 ```{r}
 
 fread("data/state.csv") -> state_df
@@ -219,44 +222,32 @@ clean_data %>%
   right_join(state_df)   %>% 
   relocate(State, .before = `Location`)  -> clean_loc  
 
-split(clean_data, ~job_type_yubinghong) ->  clean_locs 
+split(clean_data, ~job_type) ->  clean_locs 
 
 
 ```
 
+##prepare data for D3
 ```{r}
 clean_loc %>% 
-  group_by(State) %>% 
-  summarise(n = n(),
-            salary_state_avg = mean(`Avg_salary(k)`, na.rm=T)) %>% 
-  arrange(-salary_state_avg)  -> state_salary
-
-
-clean_data %>% 
   mutate(State = str_sub(`Location`,-2))  %>% 
   right_join(state_df)   %>% 
   relocate(State, .before = `Location`)  %>% 
-  group_by(State,job_type_yubinghong) %>% 
+  group_by(State,job_type) %>% 
   mutate(n = n(),
             salary_state_avg = mean(`Avg_salary(k)`, na.rm=T))%>% 
   arrange(-salary_state_avg) -> state_salary
-
-
-#clean_loc %>%
-  #writeEXCEL("clean_loc.xlsx") 
-  
-#state_salary %>%
-  #writeEXCEL("state_salary_new.xlsx")
 ```
 
-
-
+## save as xlsx file
 ```{r}
-
+# clean_loc %>%
+#   writeEXCEL("clean_loc.xlsx") 
+#   
+# state_salary %>%
+#   writeEXCEL("state_salary_new.xlsx")
 ```
 
-
-# area avg salary 
 
 
 
