@@ -212,12 +212,12 @@ split(clean_data, ~job_type_yubinghong) -> clean_datas
 
 ```{r}
 
-fread("state.csv") -> state_df
+fread("data/state.csv") -> state_df
 
 clean_data %>% 
   mutate(State = str_sub(`Location`,-2))  %>% 
   right_join(state_df)   %>% 
-  relocate(State, .before = `Location`)  -> clean_loc   %>%  View
+  relocate(State, .before = `Location`)  -> clean_loc  
 
 split(clean_data, ~job_type_yubinghong) ->  clean_locs 
 
@@ -242,11 +242,11 @@ clean_data %>%
   arrange(-salary_state_avg) -> state_salary
 
 
-clean_loc %>%
-  writeEXCEL("clean_loc.xlsx") 
+#clean_loc %>%
+  #writeEXCEL("clean_loc.xlsx") 
   
-state_salary %>%
-  writeEXCEL("state_salary_new.xlsx")
+#state_salary %>%
+  #writeEXCEL("state_salary_new.xlsx")
 ```
 
 
@@ -259,8 +259,4 @@ state_salary %>%
 # area avg salary 
 
 
-```{r}
-save(state_salary, file = "cleaned.RData")
-save(clean_locs, filr = 'locs.RData')
-```
 

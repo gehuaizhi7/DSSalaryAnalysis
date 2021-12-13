@@ -41,7 +41,7 @@ library(mi)
 ```
 
 ```{r}
-install.packages("stopwords")
+if(!require(stopwords)) install.packages("stopwords")
 library("stopwords")
 library(tidyverse)
 library(tidytext)
@@ -49,6 +49,9 @@ library("wordcloud")
 library("wordcloud2")
 library(textstem)
 library(rmarkdown)
+
+median_ybh <- function(x) median(x,na.rm=T)
+mean_ybh <- function(x) mean(x,na.rm = T)
 ```
 
 ```{r}
@@ -67,7 +70,7 @@ data%>%
   mutate(lower_jd = tolower(`Job Description`)) -> data
          
 c("python", "sql", "hadoop", "mysql", "tensorflow", "numpy","pandas","machine[[:space:]]learning","excel","tensorflow",
-"keras","pytorch","[[:space:]]ai[[:space:]]","data[[:space:]]visualization","business[[:space:]]strategy","database","spark","git","[[:space:]]c[[:space:]]","matlab","matplotlib","scipy","opencv","anaconda","spacy","nlp","java","[[:space:]]golang[[:space:]]","github","kaggle","tableau","java[[:space:]]script") ->tech_requires
+"keras","pytorch","[[:space:]]ai[[:space:]]","data[[:space:]]visualization","business[[:space:]]strategy","database","spark","git","[[:space:]]c[[:space:]]","matlab","matplotlib","scipy","opencv","anaconda","spacy","nlp","java","[[:space:]]golang[[:space:]]","github","kaggle","tableau","java[[:space:]]script","[[:space:]]r[[:space:]]" ) ->tech_requires
 
 for(tech_require in tech_requires){
   new_column_name = paste0("require_", tech_require)
@@ -76,15 +79,7 @@ for(tech_require in tech_requires){
                                                   `lower_jd`, 
                                                   ignore.case = T), 1, 0)) 
 }
-
-c("[[:space:]]r[[:space:]]" ,"[[:space:]]r\\.","RStudio")  -> tech_requires2
-
-for(tech_require in tech_requires2){
-  new_column_name = paste0("require_", tech_require)
-  data %<>%
-    mutate(!!sym(new_column_name) := ifelse(grepl(tech_require, 
-                                                  `lower_jd`), 1, 0)) 
-}
+# " r " %in% 
 
 
 c('scikit-learn','sklearn',"scikit[[:space:]]learn") -> tech_requires3
@@ -98,20 +93,20 @@ for(tech_require in tech_requires3){
 
 
 data %>% 
-  mutate(require_r = max(`require_RStudio`,
-                         `require_[[:space:]]r[[:space:]]`,
-                         `require_[[:space:]]r\\.`,
-                         na.rm=T)) %>%
   mutate(require_sklearn = max(`require_scikit-learn`,
                                `require_sklearn`,
                                `require_scikit[[:space:]]learn`,
                                na.rm=T)) %>%
-  select(-`require_RStudio`, -`require_[[:space:]]r[[:space:]]`,
-         -`require_[[:space:]]r\\.`) %>%
   select(-`require_scikit-learn`,
          -`require_sklearn`,
          `require_scikit[[:space:]]learn`)-> data_2
-  
+
+data_2 %>%
+  writeEXCEL("data_2.xlsx")
+
+data_2%>%
+  filter(require_r !=0) %>%
+  select(`Job Description`)  
 
 data_2 %>%
   select(`Avg_salary(k)`, contains("require_")) %>%
@@ -122,10 +117,14 @@ data_2 %>%
   mutate(Tech = gsub("\\[\\[\\:space\\:\\]\\]", " ", Tech)) %>%
   filter(value !=0) -> skill_data
 
+skill_data %>%
+  group_by(Tech)%>%
+  summarise(freq=n())%>%
+  arrange(-freq)-> skill_count
 
 median_ybh <- function(x) median(x,na.rm=T)
-skill_data %>%
-  writeEXCEL("skill_data.xlsx")
+#skill_data %>%
+ # writeEXCEL("skill_data.xlsx")
 
 skill_data %>%
   mutate(rank = fct_reorder(Tech, 
@@ -143,14 +142,14 @@ skill_data %>%
 ```
 
 ```{r}
-skill_count %>%
-  writeEXCEL("skill_count.xlsx")
+#skill_count %>%
+ # writeEXCEL("skill_count.xlsx")
 ```
 
 ## wordcloud for skillset
 ```{r}
 skill_count %>% 
-  arrange(-freq) %>% 
+  arrange(-freq)%>% 
   ungroup() %>% 
   as.data.frame() -> df_word
 
@@ -176,7 +175,7 @@ This plot compares salary for four job titles, filled with four colors to sepera
 
 ##
 ```{r}
-data%>% View 
+data%>% 
   mutate(lower_jd = tolower(`Job Description`)) -> data
 
 c("bacherlor" ,"master","phd")  -> academics
@@ -201,8 +200,8 @@ data_3%>%
 
 median_ybh <- function(x) median(x,na.rm=T)
 
-academic_data %>%
-  writeEXCEL("skill_data.xlsx")
+#academic_data %>%
+#  writeEXCEL("skill_data.xlsx")
 
 academic_data %>%
   mutate(ranking = fct_reorder(Academic, 
@@ -237,8 +236,8 @@ data%>%
 ```{r}
 data%>% 
   drop_na(Size)%>% 
-  ggplot(aes(x=fct_reorder(Size, `Avg_salary(k)`,median_ybh), 
-             y=`Avg_salary(k)`)) + 
+  ggplot(aes(y=fct_reorder(Size, `Avg_salary(k)`,median_ybh), 
+             x=`Avg_salary(k)`)) + 
   geom_point() + 
   labs(title = 'Company size (employee number) vs salary') + 
   labs(y = "Salary") +
@@ -246,6 +245,136 @@ data%>%
   center_title
   
 
+#found year
+
 ```
+
+
+
+
+```{r}
+data%>% 
+  drop_na(Industry)%>% 
+  group_by(Industry)%>% 
+  summarise(n = n()) %>%
+  arrange(-n) %>%
+  mutate(industry_label = ifelse(min_rank(-n) <=10, Industry, "Others") %>%
+  factor %>% fct_relevel("Others", after=Inf)) -> industry_to_label_map
+
+data %>%
+  left_join(industry_to_label_map) -> industry_data
+  
+
+industry_data%>% 
+  ggplot(aes(y=fct_reorder(industry_label, `Avg_salary(k)`,median_ybh) %>%
+               fct_relevel("Others", after=Inf),
+             x=`Avg_salary(k)`, fill = industry_label)) + 
+  geom_density_ridges(alpha=0.6)  + 
+  labs(title = 'Industry vs salary') + 
+  labs(y = "Salary") +
+  labs(x = 'Industry') +
+  center_title + 
+  theme_ridges() + 
+  theme(legend.position = "none") 
+
+```
+
+
+```{r}
+
+data%>% 
+  drop_na(Sector)%>% 
+  group_by(Sector)%>% 
+  summarise(n = n()) %>%
+  arrange(-n) %>%
+  mutate(industry_label = ifelse(min_rank(-n) <=10, Industry, "Others") %>%
+  factor %>% fct_relevel("Others", after=Inf)) -> industry_to_label_map
+
+data %>%
+  left_join(industry_to_label_map) -> industry_data
+  
+
+industry_data%>% 
+  ggplot(aes(y=fct_reorder(industry_label, `Avg_salary(k)`,median_ybh) %>%
+               fct_relevel("Others", after=Inf),
+             x=`Avg_salary(k)`, fill = industry_label)) + 
+  geom_density_ridges(alpha=0.6)  + 
+  labs(title = 'Industry vs salary') + 
+  labs(y = "Salary") +
+  labs(x = 'Industry') +
+  center_title + 
+  theme_ridges() + 
+  theme(legend.position = "none") 
+
+data%>% 
+  drop_na(Sector)%>% 
+  ggplot(aes(x=fct_reorder(Sector, `Avg_salary(k)`,median_ybh),
+             y=`Avg_salary(k)`,fill = Sector)) + 
+  geom_boxplot() + 
+  labs(title = 'Company size (employee number) vs salary') + 
+  labs(y = "Salary") +
+  labs(x = 'Average company employee') +
+  center_title
+```
+
+
+```{r}
+data%>% 
+  drop_na(Founded)%>% 
+  ggplot(aes(x=`Founded`,
+             y=`Avg_salary(k)`)) +
+  facet_wrap(~job_type_yubinghong) + 
+  geom_point(alpha = 0.15,size = 0.25) + 
+  labs(title = 'Company size (employee number) vs salary') + 
+  labs(y = "Salary") +
+  labs(x = 'Average company employee') +
+  center_title
+```
+
+revenue vs salary
+
+```{r}
+
+data %>% 
+  drop_na(`job_type_yubinghong`)%>% 
+  group_by(`job_type_yubinghong`,`Name of Company`)%>% 
+  summarise(n = n()) %>%
+  arrange(-n) 
+  summarise(salary_jobT= mean_ybh(`Avg_salary(k)`))
+
+
+data%>% 
+  drop_na(`Name of Company`)%>% 
+  group_by(`Name of Company`)%>% 
+  summarise(n = n()) %>%
+  arrange(-n) %>%
+  mutate(company_label = ifelse(min_rank(-n) <=20, `Name of Company`, "Others") %>%
+  factor %>% fct_relevel("Others", after=Inf)) -> company_to_label_map
+
+data %>%
+  left_join(company_to_label_map) -> company_data 
+
+company_data%>% 
+  ggplot(aes(x=mean_job$salary_jobT,
+             y=fct_reorder2(state, mean_job$salary_jobT, .desc = FALSE) 
+
+ggplot(belts, aes(x = fatalities, y = fct_reorder2(state, year == 1997, fatalities, .desc = FALSE), color = year)) +
+  geom_point() +
+  ggtitle("# of fatalities per million traffic miles") +
+  ylab("") +
+  theme_linedraw()
+
+
+  geom_density_ridges(alpha=0.6)  + 
+  labs(title = 'Company vs salary') + 
+  labs(y = "Salary") +
+  labs(x = 'Company') +
+  center_title + 
+  theme_ridges() + 
+  theme(legend.position = "none") 
+```
+
+
+title vs industry/sector
 
 

@@ -1,0 +1,865 @@
+--- 
+title: "DSSalaryAnalysis"
+author: "Huaizhi Ge, Huanyu Jiang and Binghong Yu"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+---
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+
+
+# Introduction
+
+We chosed this topic because data science is our shared major. Over the last ten years, data science has progressed considerably. Data science is an enthralling, lucrative, and rapidly expanding discipline. Data scientists organize and analyze enormous amounts of information, look for trends, and make predictions. Data science majored students are required in nearly every field, including business, finance, science, health, and government. As students who are looking for a position in job market, the first thing concerning us is the salary of a job position. As a data science student, we are interested in learning the salary patterns in different data science positions. We do so with the techniques we learned in class. 
+
+<!--chapter:end:index.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+# Data sources
+#data link: https://github.com/picklesueat/data_jobs_data
+
+
+
+<!--chapter:end:02-data.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+# Data transformation
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# Data transformation
+```{r}
+if(!require(plyr)) install.packages("plyr")
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(tibble)) install.packages("tibble")
+if(!require(tidyr)) install.packages("tidyr")
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(forcats)) install.packages("forcats")
+if(!require(patchwork)) install.packages("patchwork")
+if(!require(scales)) install.packages("scales")
+if(!require(readr)) install.packages("readr")
+if(!require(ggthemes)) install.packages("ggthemes")
+if(!require(ggrepel)) install.packages("ggrepel")
+if(!require(GGally)) install.packages("GGally")
+if(!require(plotly)) install.packages("plotly")
+if(!require(forcats)) install.packages("forcats")
+if(!require(stringr)) install.packages("stringr")
+
+if(!require(ggpubr)) install.packages("ggpubr")
+if(!require(PupillometryR)) install.packages("PupillometryR")
+if(!require(ggridges)) install.packages("ggridges")
+if(!require(RColorBrewer)) install.packages("RColorBrewer")
+if(!require(magrittr)) install.packages("magrittr") # allow %<>%
+
+if(!require(vcd)) install.packages("vcd")
+if(!require(d3r)) install.packages("d3r")
+if(!require(ggalluvial)) install.packages("ggalluvial")
+if(!require(parcoords)) install.packages("parcoords")
+if(!require(openxlsx)) install.packages("openxlsx")
+# pair plot
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(gridGraphics)) install.packages("gridGraphics")
+if(!require(gridExtra)) install.packages("gridExtra")
+
+library("data.table")
+
+theme(plot.title = element_text(hjust=0.5))  -> center_title
+```
+
+
+```{r}
+library("data.table")
+
+
+writeEXCEL <- function(df, file = filename, fgFill = "#007b58") {
+  options("openxlsx.borderColour" = fgFill)
+  hs <- createStyle(
+    textDecoration = "BOLD",
+    fontColour = "#FFFFFF",
+    fontSize = 12.5,
+    fontName = "Microsoft YaHei",
+    #border = c("left", "right"),
+    fgFill = fgFill,
+    halign = "center",
+    valign = "center",
+    wrapText = T
+  )
+  
+  write.xlsx(
+    df,
+    file = file,
+    #borders = 'all',
+    firstRow = TRUE,
+    asTable = TRUE,
+    withFilter = TRUE,
+    colWidths = 50, 
+    headerStyle = hs
+  )
+}
+
+```
+
+
+
+
+```{r}
+fread("data/BusinessAnalyst.csv") %>% select(-c(V1, index)) -> df_ba
+fread("data/DataAnalyst.csv")  -> df_da
+fread("data/DataEngineer.csv") -> df_de
+fread("data/DataScientist.csv") %>% select(-c(V1, index)) -> df_ds
+```
+
+```{r}
+inner_join(
+  df_ds %>% transmute(`Job Title`, `Job Description`, `Company Name`, datafile = "DS"),
+  df_da %>% transmute(`Job Title`, `Job Description`, `Company Name`, datafile = "DA"),
+  by = "Job Description"
+) %>% unique %>%
+  arrange_at("Job Title.x")
+  #writeEXCEL("temp.xlsx")
+
+  
+```
+ 
+ 
+```{r}
+bind_rows(
+  df_ba,
+  df_da,
+  df_de,
+  df_ds
+) %>% 
+  distinct(`Job Title`, `Job Description`, `Company Name`) %>%
+  # 标记关键词
+  mutate(is_de_byjd = ifelse(grepl("Data Engineer|Big Data|data engineer|Data engineer|data Engineer", `Job Description`), 1, 0)) %>%
+  mutate(is_de_byjt = ifelse(grepl("Data Engineer|DE|Big Data", `Job Title`, ignore.case = T), 1, 0)) %>%
+  
+  mutate(is_da_byjd = ifelse(grepl("Data Analyst|Data Analysis|Data analyst|data analyst", `Job Description`), 1, 0)) %>%
+  mutate(is_da_byjt = ifelse(grepl("Data Analyst|Data Analysis|DA", `Job Title`, ignore.case = T), 1, 0)) %>%
+
+  mutate(is_ds_byjd = ifelse(grepl("Data Scientist|data scientist|Data scientist||data Scientist|Data Science|data science|Data science|NLP|Machine Learning|machine learning|Machine learning", `Job Description`,), 1, 0)) %>%
+  mutate(is_ds_byjt = ifelse(grepl("Data Scientist|Data Science|DS|NLP|Machine Learning|ML", `Job Title`, ignore.case = T), 1, 0)) %>%
+  
+  mutate(is_ba_byjd = ifelse(grepl("Business Analyst|business analyst|Business analyst|Business Analytics|business analytics|Business analytics", `Job Description`), 1, 0)) %>%
+  mutate(is_ba_byjt = ifelse(grepl("Business Analyst|Business|BA|Business Analytics", `Job Title`, ignore.case = T), 1, 0)) %>%
+  
+  mutate(is_others = ifelse(is_de_byjd + is_de_byjt + is_da_byjd + is_da_byjt + is_ba_byjt + is_ba_byjd + is_ds_byjt + is_ds_byjd== 0, 1, 0)) -> df_labeled   
+  
+df_labeled %>%
+  pivot_longer(4:ncol(.)) %>% 
+  filter(value!=0) %>%
+  group_by(name) %>%
+  summarise(n = n()) %>%
+  arrange(-n) %>%
+  pull(name)  #give sequence 
+
+df_labeled %>%
+  mutate(job_type_yubinghong = case_when(
+    is_ds_byjt == 1 ~ "DS",
+    is_de_byjt == 1 ~ "DE",
+    is_ba_byjt == 1 ~ "BA",
+    is_da_byjt == 1 ~ "DA",
+    
+    is_ds_byjd == 1 ~ "DS",
+    is_de_byjd == 1 ~ "DE",
+    is_ba_byjd == 1 ~ "BS",
+    is_da_byjd == 1 ~ "DA"
+
+  )) %>% #Job title is more accurate than JD
+  select(`Job Title`, `Job Description`, `Company Name`, job_type_yubinghong) -> unique_mapper
+
+# 一对一
+unique_mapper %>%
+ggplot() +
+  aes(x =  job_type_yubinghong) +
+  geom_histogram(stat="count")
+
+
+# 一对多
+df_labeled %>%
+  rowwise() %>%
+  mutate(is_ba = max(is_ba_byjt, is_ba_byjd)) %>%
+  mutate(is_de = max(is_de_byjt, is_de_byjd)) %>%
+  mutate(is_ds = max(is_ds_byjt, is_ds_byjd)) %>%
+  mutate(is_da = max(is_da_byjt, is_da_byjd)) %>%
+  select(1:3, is_ba, is_de, is_da, is_ds) %>%
+  pivot_longer(4:ncol(.), 
+               names_to = "Job_Type") %>% 
+  filter(value!=0) %>% select(-value) -> multi_mapper
+
+multi_mapper %>%  
+ggplot() +
+  aes(x =  Job_Type) +
+  geom_histogram(stat="count")
+```
+ 
+```{r}
+bind_rows(
+  df_ba %>% mutate(file_Type = "BA"),
+  df_da %>% mutate(file_Type = "DA"),
+  df_de %>% mutate(file_Type = "DE"),
+  df_ds %>% mutate(file_Type = "DS")
+) %>%
+  unique %>%
+  left_join(unique_mapper)  -> clean_jobT  
+
+```
+
+
+```{r}
+clean_jobT %>%
+  select(1:ncol(.))%>%
+  mutate_all(~ifelse(. %in% c("NA", -1, "Unknown", "Unknown / Non-Applicable"), NA, .))   %>%
+  mutate_at('Job Title',~ifelse(. %in% c("Sr. Data Analyst","Sr Data Analyst","Sr Analyst,Dara","(Senior) Data Engineer" ), "Senior Data Analyst", .)) %>%
+  mutate_at('Job Title' ,~ifelse(. %in% c("Jr. Data Analyst","Jr Data Analyst","Data Analyst Junior"), "Junior Data Analyst", .)) %>%
+  #mutate_at('Job Title',~str_replace_all(., "+", ""))  %>%
+  as_tibble %>%
+  separate(`Company Name`, into = c("Name of Company","rate"), sep = "\n",remove = T) %>% 
+  select(-rate)%>% 
+  separate(`Salary Estimate`, into = c("low","high"), sep = "-",remove = T) %>%
+  mutate(low_salary = as.numeric(str_extract(low, "\\d+")),
+         high_salary = as.numeric(str_extract(high, "\\d+")),
+         avg_salary = (low_salary + high_salary) / 2)  %>% 
+  rename("Low_salary(k)" = low_salary,
+        "High_salary(k)" = high_salary, 
+        "Avg_salary(k)" = avg_salary) %>%  
+  select(c(-low,-high))-> clean_data  
+
+
+```
+
+```{r}
+split(clean_data, ~job_type_yubinghong) -> clean_datas
+#split based on four job title 
+```
+
+```{r}
+
+fread("data/state.csv") -> state_df
+
+clean_data %>% 
+  mutate(State = str_sub(`Location`,-2))  %>% 
+  right_join(state_df)   %>% 
+  relocate(State, .before = `Location`)  -> clean_loc  
+
+split(clean_data, ~job_type_yubinghong) ->  clean_locs 
+
+
+```
+
+```{r}
+clean_loc %>% 
+  group_by(State) %>% 
+  summarise(n = n(),
+            salary_state_avg = mean(`Avg_salary(k)`, na.rm=T)) %>% 
+  arrange(-salary_state_avg)  -> state_salary
+
+
+clean_data %>% 
+  mutate(State = str_sub(`Location`,-2))  %>% 
+  right_join(state_df)   %>% 
+  relocate(State, .before = `Location`)  %>% 
+  group_by(State,job_type_yubinghong) %>% 
+  mutate(n = n(),
+            salary_state_avg = mean(`Avg_salary(k)`, na.rm=T))%>% 
+  arrange(-salary_state_avg) -> state_salary
+
+
+#clean_loc %>%
+  #writeEXCEL("clean_loc.xlsx") 
+  
+#state_salary %>%
+  #writeEXCEL("state_salary_new.xlsx")
+```
+
+
+
+```{r}
+
+```
+
+
+# area avg salary 
+
+
+
+
+<!--chapter:end:03-cleaning.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+# Missing values 
+
+## load data & preprocess data
+ 
+- replace -1, Unknown/ Non-Applicable to NA 
+- convert 'Salary Estimate' to col: low_salary, high_salary, avg_salary
+- convert 'employee' to col: lower_bound_employee, upper_bound_employee, avg_employee
+
+```{r echo=FALSE}
+# Basics
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(tibble)) install.packages("tibble")
+if(!require(tidyr)) install.packages("tidyr")
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(forcats)) install.packages("forcats")
+if(!require(patchwork)) install.packages("patchwork")
+if(!require(scales)) install.packages("scales")
+if(!require(readr)) install.packages("readr")
+if(!require(ggthemes)) install.packages("ggthemes")
+if(!require(ggrepel)) install.packages("ggrepel")
+if(!require(GGally)) install.packages("GGally")
+if(!require(plotly)) install.packages("plotly")
+if(!require(forcats)) install.packages("forcats")
+if(!require(stringr)) install.packages("stringr")
+
+if(!require(ggpubr)) install.packages("ggpubr")
+if(!require(PupillometryR)) install.packages("PupillometryR")
+if(!require(ggridges)) install.packages("ggridges")
+if(!require(RColorBrewer)) install.packages("RColorBrewer")
+if(!require(magrittr)) install.packages("magrittr") # allow %<>%
+
+if(!require(vcd)) install.packages("vcd")
+if(!require(d3r)) install.packages("d3r")
+if(!require(ggalluvial)) install.packages("ggalluvial")
+if(!require(parcoords)) install.packages("parcoords")
+
+# pair plot
+if(!require(gridGraphics)) install.packages("gridGraphics")
+if(!require(gridExtra)) install.packages("gridExtra")
+
+library("data.table")
+library(mi)
+```
+
+```{r echo=FALSE}
+ds_data = fread('data/DataScientist.csv') 
+ds_data %>%
+  select(3:ncol(.)) %>%
+  mutate_all(~ifelse(. %in% c("NA", -1, "Unknown", "Unknown / Non-Applicable"), NA, .))   %>%
+  as_tibble %>%
+  separate(`Salary Estimate`, into = c("low","high"), sep = "-",remove = T) %>%
+  mutate(low_salary = as.numeric(str_extract(low, "\\d+")),
+         high_salary = as.numeric(str_extract(high, "\\d+")),
+         avg_salary = (low_salary + high_salary) / 2)  %>% 
+
+  separate(Size, into = c("low_ppl","high_ppl"), sep = "to", remove = T) %>% 
+  mutate(lower_bound_employee = as.numeric(str_extract(low_ppl, "\\d+")),
+         upper_bound_employee = as.numeric(str_extract(high_ppl, "\\d+")),
+         avg_employee= case_when(
+           !is.na(lower_bound_employee) & is.na(upper_bound_employee) ~ lower_bound_employee,
+           T ~ (lower_bound_employee + upper_bound_employee) / 2)) ->ds_data
+```
+
+
+
+```{r echo=FALSE}
+head(ds_data)
+
+```
+
+## missing value by column:
+
+```{r echo=FALSE}
+colSums(is.na(ds_data)) %>%
+  sort(decreasing = TRUE)
+```
+
+## choose first ten company 
+
+```{r echo=FALSE, fig.width = 13}
+n_row = nrow(ds_data)
+variables = colnames(ds_data)
+
+ds_data %>% 
+  slice(1:10) %>%
+  mutate_all( as.character) %>%
+  relocate(`Company Name`, 1) %>%
+  pivot_longer(2:ncol(.)) %>%
+  mutate(missing = ifelse(is.na(value), T, F)) %>%
+
+ggplot() +
+  geom_tile(aes(x=name,
+                y=`Company Name`,
+                fill=factor(missing))) + 
+  labs(x = 'variable', y = 'company')+
+  scale_fill_manual(values = c("grey60", alpha( "cornflowerblue", 0.6))) +
+  scale_alpha_manual(values = c(0.5, 0.9)) +
+  theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95))
+```
+
+## use mi library draw heatmap and check missing value
+
+```{r echo=TRUE, fig.height=6}
+x <- mi::missing_data.frame(ds_data %>% as.data.frame())
+image(x)
+```
+
+show patterns of missing value 
+```{r}
+levels(x@patterns)
+```
+
+```{r echo=FALSE}
+summary(x@patterns)
+```
+
+```{r}
+missing_value_plot <- function(df, showcount=TRUE){
+  
+  missing_patterns <- data.frame(is.na(df)) %>%
+  group_by_all() %>%
+  count(name = "count", sort = TRUE) %>%
+  ungroup()
+  n_row =  nrow(df)
+  colname = colnames(df)
+
+  up_table <- missing_patterns %>% 
+      pivot_longer(-c(count), 
+                   names_to = "var",
+                   values_to = "missing") %>% 
+      mutate(temp = missing * count) %>%
+      group_by(var) %>%
+      summarise(total_row = sum(temp)) %>% 
+      arrange(-total_row) %>% 
+      mutate(percent_row = total_row/n_row*100,var = fct_inorder(var))
+  
+  if(showcount){
+    up_table %>%
+    ggplot(aes(x = var ,y = total_row))+
+    geom_col(show.legend = FALSE,fill="#4D65D0")+
+    labs(x="",y="num rows missing") +
+    scale_y_continuous(expand = c(0,0))+
+    theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95))  -> p1
+    
+  }else{
+    up_table %>%
+    ggplot(aes(x = var ,y = percent_row))+
+    geom_col(show.legend = FALSE,fill="#4D65D0")+
+    labs(x="",y="% rows missing") +
+    scale_y_continuous(expand = c(0,0),limits = c(0,100))+
+    theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95)) -> p1
+  }
+
+  var_seq = levels(fct_inorder(up_table$var))
+  
+  missing_patterns %>% 
+      arrange(-count) %>%
+      mutate(index = factor(1:n()),
+             percent_pat = count/n_row*100) ->  temp_1
+      temp_1 %>% select_at(var_seq) %>%
+      apply(1, sum) -> missing_sum
+  
+      temp_1 %>%
+      mutate(missing_sum = missing_sum,
+           complete_cases = ifelse(missing_sum == 0, T,F))   %>% 
+      select(c(index,percent_pat,count,complete_cases)) -> right_table
+  
+  if(showcount){
+    right_table %>%
+    ggplot(aes(x = count,y = fct_rev(index),fill=complete_cases))+
+    geom_col(show.legend = FALSE)+
+    scale_fill_manual(values = c("#4D65D0", "#2A22FF")) +
+    labs(x="row count",y="")+
+    scale_x_continuous(expand = c(0,0)) +
+    theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95))-> p2
+    
+  }else{
+    right_table %>%
+    ggplot(aes(x = percent_pat,y = fct_rev(index),fill=complete_cases))+
+    geom_col(show.legend = FALSE)+
+    scale_fill_manual(values = c("#4D65D0", "#2A22FF")) +
+    labs(x="% rows",y="")+
+    scale_x_continuous(expand = c(0,0),limits = c(0,100)) +
+    theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95)) -> p2 }
+    
+  central_table <- missing_patterns %>% 
+      arrange(-count) %>%
+      select_at(var_seq) %>% 
+      mutate(index = factor(1:n())) ->  temp_2
+      temp_2 %>% select_at(var_seq) %>%
+      apply(1, sum) -> missing_sum_1
+  
+    central_table <- temp_2 %>%
+      mutate(missing_sum_1 = missing_sum_1,
+           complete_cases = ifelse(missing_sum_1 == 0, T,F))   %>% 
+      pivot_longer(-c(index,complete_cases,missing_sum_1),names_to = "var", values_to = "missing") %>%
+      rename(feature = var) %>%
+      mutate(feature = factor(feature, levels = var_seq))
+ 
+  n = ceiling((length(var_seq))/2)
+
+  tibble(index = central_table %>% filter(complete_cases) %>% distinct(index) %>% pull(index),
+         feature = var_seq[n],
+         label = "complete cases") -> text
+  
+  
+  central_table %>% 
+    
+    ggplot() +
+    geom_tile(aes(x=feature,y=fct_rev(index),fill=factor(missing),alpha=complete_cases),
+              color = "white",show.legend = FALSE) + 
+    geom_text(data = text,
+              aes(x = feature, 
+                  y = index,
+                  label = label),
+              size = 6,
+              color = "black",
+              na.rm = TRUE)  +
+    labs(x = 'variable', y = 'missing pattern')+
+    scale_fill_manual(values = c("grey40", "purple")) +
+    scale_alpha_manual(values = c(0.5, 0.9)) +
+    theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95))-> p3
+    
+ layout<- "111111144
+  111111144
+  333333322
+  333333322
+  333333322
+  333333322
+  333333322
+  333333322
+  333333322"
+  print(p1+p2+p3 + plot_layout(design = layout))
+}
+
+```
+
+## draw the missing pattern plot using the function from homework
+```{r echo=FALSE, fig.width=15,fig.height=13}
+missing_value_plot(ds_data,showcount = F)
+```
+
+
+```{r echo=FALSE, fig.width=15,fig.height=13}
+missing_value_plot(ds_data,showcount = T)
+```
+
+The most frequent missing pattern is the pattern where Easy.apply and Competitors are both missing, while the other variables are not. Moreover, Easy.apply and Competitors are more likely to be missing in the dataset than the other variables. 
+
+While other values are missing, the values of Company.name, index, Job.Description, Job.Title, Location, Salary.Estimate, and X are all presenting in the dataset. 
+
+The features Industry and Sector seem to be missing at the same time. 
+
+The feature Founded seems to be an independent feature, its representing doesn't effect other feature’s status. 
+
+Complete cases only appears less than 100 rows while there are more than 2000 rows of data in the set.
+
+<!--chapter:end:04-missing.Rmd-->
+
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+# Results
+```{r echo=FALSE}
+# Basics
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(tibble)) install.packages("tibble")
+if(!require(tidyr)) install.packages("tidyr")
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(forcats)) install.packages("forcats")
+if(!require(patchwork)) install.packages("patchwork")
+if(!require(scales)) install.packages("scales")
+if(!require(readr)) install.packages("readr")
+if(!require(ggthemes)) install.packages("ggthemes")
+if(!require(ggrepel)) install.packages("ggrepel")
+if(!require(GGally)) install.packages("GGally")
+if(!require(plotly)) install.packages("plotly")
+if(!require(forcats)) install.packages("forcats")
+if(!require(stringr)) install.packages("stringr")
+
+if(!require(ggpubr)) install.packages("ggpubr")
+if(!require(PupillometryR)) install.packages("PupillometryR")
+if(!require(ggridges)) install.packages("ggridges")
+if(!require(RColorBrewer)) install.packages("RColorBrewer")
+if(!require(magrittr)) install.packages("magrittr") # allow %<>%
+
+if(!require(vcd)) install.packages("vcd")
+if(!require(d3r)) install.packages("d3r")
+if(!require(ggalluvial)) install.packages("ggalluvial")
+if(!require(parcoords)) install.packages("parcoords")
+
+# pair plot
+if(!require(gridGraphics)) install.packages("gridGraphics")
+if(!require(gridExtra)) install.packages("gridExtra")
+
+library("data.table")
+library(mi)
+```
+
+```{r}
+install.packages("stopwords")
+library("stopwords")
+library(tidyverse)
+library(tidytext)
+library("wordcloud")
+library("wordcloud2")
+library(textstem)
+library(rmarkdown)
+```
+
+```{r}
+
+# Loading
+library("readxl")
+# xls files
+data <- read_excel("data/clean_loc.xlsx")
+split(data, data$job_type_yubinghong) -> datas
+```
+
+## Skill set vs salary
+```{r}
+# turn into lower case
+data%>% 
+  mutate(lower_jd = tolower(`Job Description`)) -> data
+         
+c("python", "sql", "hadoop", "mysql", "tensorflow", "numpy","pandas","machine[[:space:]]learning","excel","tensorflow",
+"keras","pytorch","[[:space:]]ai[[:space:]]","data[[:space:]]visualization","business[[:space:]]strategy","database","spark","git","[[:space:]]c[[:space:]]","matlab","matplotlib","scipy","opencv","anaconda","spacy","nlp","java","[[:space:]]golang[[:space:]]","github","kaggle","tableau","java[[:space:]]script") ->tech_requires
+
+for(tech_require in tech_requires){
+  new_column_name = paste0("require_", tech_require)
+  data %<>%
+    mutate(!!sym(new_column_name) := ifelse(grepl(tech_require, 
+                                                  `lower_jd`, 
+                                                  ignore.case = T), 1, 0)) 
+}
+
+c("[[:space:]]r[[:space:]]" ,"[[:space:]]r\\.","RStudio")  -> tech_requires2
+
+for(tech_require in tech_requires2){
+  new_column_name = paste0("require_", tech_require)
+  data %<>%
+    mutate(!!sym(new_column_name) := ifelse(grepl(tech_require, 
+                                                  `lower_jd`), 1, 0)) 
+}
+
+
+c('scikit-learn','sklearn',"scikit[[:space:]]learn") -> tech_requires3
+
+for(tech_require in tech_requires3){
+  new_column_name = paste0("require_", tech_require)
+  data %<>%
+    mutate(!!sym(new_column_name) := ifelse(grepl(tech_require, 
+                                                  `lower_jd`), 1, 0)) 
+}
+
+
+data %>% 
+  mutate(require_r = max(`require_RStudio`,
+                         `require_[[:space:]]r[[:space:]]`,
+                         `require_[[:space:]]r\\.`,
+                         na.rm=T)) %>%
+  mutate(require_sklearn = max(`require_scikit-learn`,
+                               `require_sklearn`,
+                               `require_scikit[[:space:]]learn`,
+                               na.rm=T)) %>%
+  select(-`require_RStudio`, -`require_[[:space:]]r[[:space:]]`,
+         -`require_[[:space:]]r\\.`) %>%
+  select(-`require_scikit-learn`,
+         -`require_sklearn`,
+         `require_scikit[[:space:]]learn`)-> data_2
+  
+
+data_2 %>%
+  select(`Avg_salary(k)`, contains("require_")) %>%
+  pivot_longer(2:ncol(.),
+               names_to = "Tech") %>% 
+  mutate(Tech = gsub("require_", "", Tech)) %>%
+  mutate(Tech = gsub("[[:space:]]+", " ", Tech)) %>%
+  mutate(Tech = gsub("\\[\\[\\:space\\:\\]\\]", " ", Tech)) %>%
+  filter(value !=0) -> skill_data
+
+skill_data %>%
+  group_by(Tech)%>%
+  summarise(n=n()) -> skill_count
+
+median_ybh <- function(x) median(x,na.rm=T)
+#skill_data %>%
+ # writeEXCEL("skill_data.xlsx")
+
+skill_data %>%
+  mutate(rank = fct_reorder(Tech, 
+                            `Avg_salary(k)`, 
+                            median_ybh))%>%
+  ggplot(aes(x = rank,
+      y = `Avg_salary(k)`, fill = rank))+
+  geom_boxplot() +
+  theme(axis.text.x = element_text(hjust=0.8, angle=30)) +
+  center_title + 
+  labs(title = "Skill set vs salary") +
+  labs(x = "Skill set") +
+  labs(y = "Average salary in k")
+
+```
+
+```{r}
+#skill_count %>%
+ # writeEXCEL("skill_count.xlsx")
+```
+
+## wordcloud for skillset
+```{r}
+skill_count %>% 
+  arrange(-freq) %>% 
+  ungroup() %>% 
+  as.data.frame() -> df_word
+
+rownames(df_word) <- df_word$Tech
+wordcloud2(df_word , size = 2, shape = 'movie') 
+```
+
+## salary vs job title 
+```{r}
+data %>%
+  drop_na(job_type_yubinghong)   %>% 
+  mutate_if(is.numeric, ~replace(., is.na(.), 0))  %>% 
+  ggplot(aes(y=`Avg_salary(k)`, 
+             x = job_type_yubinghong,
+             fill = job_type_yubinghong)) +
+  geom_boxplot() +
+  labs(title = 'Average salary for job titles') + 
+  labs(x = "Job titile") +
+  labs(y = 'average salary in k unit ') +
+  center_title
+```
+This plot compares salary for four job titles, filled with four colors to seperate the job title.
+
+##
+```{r}
+data%>% View 
+  mutate(lower_jd = tolower(`Job Description`)) -> data
+
+c("bacherlor" ,"master","phd")  -> academics
+
+for(academic in academics){
+  new_column_name = paste0("require_", academic)
+  data %>%
+    mutate(!!sym(new_column_name) := ifelse(grepl(academic, 
+                                                  `lower_jd`), 1, 0))-> data_3
+}
+
+
+data_3%>%
+  select(`Avg_salary(k)`, contains("require_")) %>%
+  pivot_longer(2:ncol(.),
+               names_to = "Academic") %>% 
+  mutate(Tech = gsub("require_", "", Academic)) %>%
+  #mutate(Tech = gsub("[[:space:]]+", " ", Tech)) %>%
+  #mutate(Tech = gsub("\\[\\[\\:space\\:\\]\\]", " ", Tech)) %>%
+  filter(value !=0) -> academic_data
+
+
+median_ybh <- function(x) median(x,na.rm=T)
+
+#academic_data %>%
+#  writeEXCEL("skill_data.xlsx")
+
+academic_data %>%
+  mutate(ranking = fct_reorder(Academic, 
+                            `Avg_salary(k)`, 
+                            median_ybh))%>%
+  ggplot(aes(x = ranking,
+      y = `Avg_salary(k)`, fill = ranking))+
+  geom_boxplot() +
+  theme(axis.text.x = element_text(hjust=0.8, angle=30)) +
+  center_title + 
+  labs(title = "Skill set vs salary") +
+  labs(x = "Skill set") +
+  labs(y = "Average salary in k")
+
+```
+
+## company size vs salary 不行！重来
+```{r}
+data%>% 
+  drop_na(Size)%>% 
+  ggplot(aes(x=fct_reorder(Size, `Avg_salary(k)`,median_ybh), 
+             y=`Avg_salary(k)`,fill = Size)) + 
+  geom_boxplot() + 
+  labs(title = 'Company size (employee number) vs salary') + 
+  labs(y = "Salary") +
+  labs(x = 'Average company employee') +
+  center_title
+  
+
+```
+
+```{r}
+data%>% 
+  drop_na(Size)%>% 
+  ggplot(aes(x=fct_reorder(Size, `Avg_salary(k)`,median_ybh), 
+             y=`Avg_salary(k)`)) + 
+  geom_point() + 
+  labs(title = 'Company size (employee number) vs salary') + 
+  labs(y = "Salary") +
+  labs(x = 'Average company employee') +
+  center_title
+  
+
+```
+
+
+
+<!--chapter:end:05-results.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+# Interactive component
+
+
+<iframe src="d3.html" width="750" height="550"></iframe>
+
+
+<!--chapter:end:06-interactive.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+# Conclusion
+
+
+<!--chapter:end:07-conclusion.Rmd-->
+
