@@ -1,3 +1,5 @@
 # Interactive component
 
 
+<iframe src="d3.html" width="750" height="550"></iframe>
+

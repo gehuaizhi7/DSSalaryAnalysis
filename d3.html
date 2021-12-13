@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <div id="viz_map">
+        <input type="checkbox" class="checkbox" value="DA" checked><label>Data Analytics</label>
+        <input type="checkbox" class="checkbox" value="DS" checked><label>Data Scientist</label>
+        <input type="checkbox" class="checkbox" value="BA" checked><label>Business Analytics</label>
+        <input type="checkbox" class="checkbox" value="DE" checked><label>Data Engineer</label>
+    </div>
+
+    <title>EDAV-D3</title>
+</head>
+<body>
+</body>
+</html>
+
+<script>
+    
+
+    // set width and height of svg
+    const width = 800
+    const height = 400
+
+    // The svg
+    const svg = d3.select("#viz_map")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        
+
+
+    
+    // Map and projection
+    const projection = d3.geoMercator()
+        .center([-95, 40])                // GPS of location to zoom on
+        .scale(600)                       // This is like the zoom
+        .translate([ width/2, height/2 ])
+    
+    // Create data for circles:
+    const markers = [
+    {long:-74.01, lat: 40.71, group: "DS", size: 127.0, name: "NY", count: 305},
+{long:-74.01, lat: 40.71, group: "DE", size: 98.0, name: "NY", count: 220},
+{long:-74.01, lat: 40.71, group: "BA", size: 84.0, name: "NY", count: 261},
+{long:-74.01, lat: 40.71, group: "DA", size: 78.0, name: "NY", count: 431},
+{long:-119.42, lat: 36.78, group: "DS", size: 123.0, name: "CA", count: 1080},
+{long:-119.42, lat: 36.78, group: "DE", size: 120.0, name: "CA", count: 616},
+{long:-119.42, lat: 36.78, group: "BA", size: 99.0, name: "CA", count: 757},
+{long:-119.42, lat: 36.78, group: "DA", size: 96.0, name: "CA", count: 1190},
+{long:-82.9, lat: 40.41, group: "DS", size: 100.0, name: "OH", count: 109},
+{long:-82.9, lat: 40.41, group: "DA", size: 66.0, name: "OH", count: 127},
+{long:-89.39, lat: 40.63, group: "DE", size: 97.0, name: "IL", count: 233},
+{long:-89.39, lat: 40.63, group: "DS", size: 86.0, name: "IL", count: 281},
+{long:-89.39, lat: 40.63, group: "DA", size: 79.0, name: "IL", count: 308},
+{long:-89.39, lat: 40.63, group: "BA", size: 78.0, name: "IL", count: 280},
+{long:-77.19, lat: 41.2, group: "DS", size: 96.0, name: "PA", count: 296},
+{long:-77.19, lat: 41.2, group: "DE", size: 95.0, name: "PA", count: 195},
+{long:-77.19, lat: 41.2, group: "BA", size: 78.0, name: "PA", count: 207},
+{long:-77.19, lat: 41.2, group: "DA", size: 76.0, name: "PA", count: 276},
+{long:-111.09, lat: 34.05, group: "DE", size: 95.0, name: "AZ", count: 231},
+{long:-111.09, lat: 34.05, group: "DS", size: 88.0, name: "AZ", count: 269},
+{long:-111.09, lat: 34.05, group: "DA", size: 79.0, name: "AZ", count: 213},
+{long:-111.09, lat: 34.05, group: "BA", size: 69.0, name: "AZ", count: 252},
+{long:-99.9, lat: 31.96, group: "DE", size: 91.0, name: "TX", count: 955},
+{long:-99.9, lat: 31.96, group: "DS", size: 84.0, name: "TX", count: 1331},
+{long:-99.9, lat: 31.96, group: "DA", size: 73.0, name: "TX", count: 989},
+{long:-99.9, lat: 31.96, group: "BA", size: 69.0, name: "TX", count: 862},
+{long:-120.74, lat: 47.75, group: "DA", size: 84.0, name: "WA", count: 119},
+{long:-76.64, lat: 39.04, group: "DA", size: 81.0, name: "MD", count: 167},
+{long:-74.4, lat: 40.05, group: "BA", size: 79.0, name: "NJ", count: 104},
+{long:-74.4, lat: 40.05, group: "DA", size: 75.0, name: "NJ", count: 149},
+{long:-86.58, lat: 35.51, group: "DA", size: 78.0, name: "TN", count: 63},
+{long:-91.83, lat: 37.96, group: "DA", size: 76.0, name: "MO", count: 102},
+{long:-71.38, lat: 42.4, group: "DA", size: 75.0, name: "MA", count: 181},
+{long:-78.65, lat: 37.43, group: "DA", size: 74.0, name: "VA", count: 211},
+{long:-105.78, lat: 39.55, group: "DA", size: 73.0, name: "CO", count: 127},
+{long:-81.51, lat: 27.66, group: "DS", size: 69.0, name: "FL", count: 137},
+{long:-81.51, lat: 27.66, group: "DE", size: 64.0, name: "FL", count: 64},
+{long:-81.51, lat: 27.66, group: "DA", size: 62.0, name: "FL", count: 201},
+{long:-79.01, lat: 35.75, group: "DA", size: 69.0, name: "NC", count: 187},
+{long:-94.68, lat: 46.72, group: "DA", size: 68.0, name: "MN", count: 77},
+{long:-88.78, lat: 43.78, group: "DA", size: 62.0, name: "WI", count: 61},
+{long:-82.9, lat: 32.16, group: "DA", size: 61.0, name: "GA", count: 145},
+{long:-85.6, lat: 44.31, group: "DA", size: 59.0, name: "MI", count: 60},
+{long:-86.09, lat: 39.46, group: "DA", size: 52.0, name: "IN", count: 54},
+    ];
+
+    // Load external data and boot
+    d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then( function(data){
+    
+        // Filter data
+        data.features = data.features.filter(d => {console.log(d.properties.name); return d.properties.name=="USA"})
+    
+        // Create a color scale
+        const color = d3.scaleOrdinal()
+            .domain(["DA", "DS", "BA", "DE"])
+            .range([ "#F37A22", "#04B5A0", "#FFD66F", "#51FF00"])
+
+        // Add a scale for bubble size
+        const size = d3.scaleLinear()
+            .domain([50,130])  // What's in the data
+            .range([ 4, 50])  // Size in pixel
+
+        // Draw the map
+        svg.append("g")
+            .selectAll("path")
+            .data(data.features)
+            .join("path")
+              .attr("fill", "#F0AFAB")
+              .attr("d", d3.geoPath()
+                  .projection(projection)
+              )
+            .style("stroke", "grey")
+            .style("opacity",0.7)
+
+        // create a tooltip
+        const Tooltip = d3.select("#viz_map")
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "2px")
+        .style("border-radius", "5px")
+        .style("padding", "5px")
+
+
+        // Three function that change the tooltip when user hover / move / leave a cell
+        const mouseover = function(event, d) {
+        Tooltip.style("opacity", 1)
+
+        }
+        var mousemove = function(event, d) {
+            Tooltip
+                .html(d.name + "<br>" + "job type:" + d.group + "<br>" + "count: " + d.count + "<br>" + "average salary: " + d.size)
+                .style("left", (event.x)/2 + "px")
+                .style("top", (event.y)/2 - 30 + "px")
+        }
+        var mouseleave = function(event, d) {
+        Tooltip.style("opacity", 0)
+        }
+
+
+
+        // Add circles:
+        svg
+            .selectAll("myCircles")
+            .data(markers)
+            .join("circle")
+                .attr("class" , d => d.group )
+                .attr("cx", d => projection([d.long, d.lat])[0])
+                .attr("cy", d => projection([d.long, d.lat])[1])
+                .attr("r", d => size(d.size))
+                .style("fill", d => color(d.group))
+                .attr("stroke", d => color(d.group))
+                .attr("stroke-width", 3)
+                .attr("fill-opacity", .4)
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
+        
+
+
+        // This function is gonna change the opacity and size of selected and unselected circles
+        function update(){
+
+            // For each check box:
+            d3.selectAll(".checkbox").each(function(d){
+                cb = d3.select(this);
+                grp = cb.property("value")
+
+                // If the box is check, I show the group
+                if(cb.property("checked")){
+                    svg.selectAll("."+grp).transition().duration(1000).style("opacity", 1).attr("r", function(d){ return size(d.size) })
+
+                // Otherwise I hide it
+                }else{
+                    svg.selectAll("."+grp).transition().duration(1000).style("opacity", 0).attr("r", 0)
+                }
+            })
+        }
+
+        // When a button change, I run the update function
+        d3.selectAll(".checkbox").on("change",update);
+
+        // And I initialize it at the beginning
+        update()
+    })
+    </script>
