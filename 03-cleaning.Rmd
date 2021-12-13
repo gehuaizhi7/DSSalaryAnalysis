@@ -34,14 +34,19 @@ if(!require(ggalluvial)) install.packages("ggalluvial")
 if(!require(parcoords)) install.packages("parcoords")
 if(!require(openxlsx)) install.packages("openxlsx")
 # pair plot
-
+if(!require(ggplot2)) install.packages("ggplot2")
 if(!require(gridGraphics)) install.packages("gridGraphics")
 if(!require(gridExtra)) install.packages("gridExtra")
+
+library("data.table")
+
+theme(plot.title = element_text(hjust=0.5))  -> center_title
 ```
 
 
 ```{r}
 library("data.table")
+
 
 writeEXCEL <- function(df, file = filename, fgFill = "#007b58") {
   options("openxlsx.borderColour" = fgFill)
@@ -75,7 +80,6 @@ writeEXCEL <- function(df, file = filename, fgFill = "#007b58") {
 
 
 ```{r}
-
 fread("data/BusinessAnalyst.csv") %>% select(-c(V1, index)) -> df_ba
 fread("data/DataAnalyst.csv")  -> df_da
 fread("data/DataEngineer.csv") -> df_de
@@ -109,7 +113,7 @@ bind_rows(
   
   mutate(is_da_byjd = ifelse(grepl("Data Analyst|Data Analysis|Data analyst|data analyst", `Job Description`), 1, 0)) %>%
   mutate(is_da_byjt = ifelse(grepl("Data Analyst|Data Analysis|DA", `Job Title`, ignore.case = T), 1, 0)) %>%
-  
+
   mutate(is_ds_byjd = ifelse(grepl("Data Scientist|data scientist|Data scientist||data Scientist|Data Science|data science|Data science|NLP|Machine Learning|machine learning|Machine learning", `Job Description`,), 1, 0)) %>%
   mutate(is_ds_byjt = ifelse(grepl("Data Scientist|Data Science|DS|NLP|Machine Learning|ML", `Job Title`, ignore.case = T), 1, 0)) %>%
   
@@ -176,10 +180,6 @@ bind_rows(
   unique %>%
   left_join(unique_mapper)  -> clean_jobT  
 
-
-#save as xsls
-clean_jobT %>%
-  writeEXCEL("clean_jobT.xlsx") 
 ```
 
 
@@ -200,20 +200,9 @@ clean_jobT %>%
   rename("Low_salary(k)" = low_salary,
         "High_salary(k)" = high_salary, 
         "Avg_salary(k)" = avg_salary) %>%  
-  select(c(-low,-high))%>%  
-  separate(Size, into = c("low_ppl","high_ppl"), sep = "to", remove = T) %>% 
-  mutate(min_employee = as.numeric(str_extract(low_ppl, "\\d+")),
-         max_employee = as.numeric(str_extract(high_ppl, "\\d+")),
-         avg_employee= case_when(
-           !is.na(min_employee) & is.na(max_employee) ~ min_employee,
-           T ~ (min_employee + max_employee) / 2))   %>%
-  rename("Min_employee" = min_employee,
-        "Max_employee" = max_employee, 
-        "Avg_employee" = avg_employee)  %>%
-  select(c(-low_ppl,-high_ppl))  -> clean_data  
+  select(c(-low,-high))-> clean_data  
 
-clean_data %>%
-  writeEXCEL("clean_data.xlsx") 
+
 ```
 
 ```{r}
@@ -228,8 +217,14 @@ fread("state.csv") -> state_df
 clean_data %>% 
   mutate(State = str_sub(`Location`,-2))  %>% 
   right_join(state_df)   %>% 
-  relocate(State, .before = `Location`)  -> clean_loc
+  relocate(State, .before = `Location`)  -> clean_loc   %>%  View
 
+split(clean_data, ~job_type_yubinghong) ->  clean_locs 
+
+
+```
+
+```{r}
 clean_loc %>% 
   group_by(State) %>% 
   summarise(n = n(),
@@ -241,17 +236,22 @@ clean_data %>%
   mutate(State = str_sub(`Location`,-2))  %>% 
   right_join(state_df)   %>% 
   relocate(State, .before = `Location`)  %>% 
-  group_by(State) %>% 
+  group_by(State,job_type_yubinghong) %>% 
   mutate(n = n(),
             salary_state_avg = mean(`Avg_salary(k)`, na.rm=T))%>% 
   arrange(-salary_state_avg) -> state_salary
-  
+
+
 clean_loc %>%
   writeEXCEL("clean_loc.xlsx") 
   
 state_salary %>%
-  writeEXCEL("state_salary.xlsx") 
- 
+  writeEXCEL("state_salary_new.xlsx")
+```
+
+
+
+```{r}
 
 ```
 
@@ -261,5 +261,6 @@ state_salary %>%
 
 ```{r}
 save(state_salary, file = "cleaned.RData")
+save(clean_locs, filr = 'locs.RData')
 ```
 
