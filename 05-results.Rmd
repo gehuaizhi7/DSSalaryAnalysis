@@ -1,1 +1,78 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Results
+```{r echo=FALSE}
+# Basics
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(tibble)) install.packages("tibble")
+if(!require(tidyr)) install.packages("tidyr")
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(forcats)) install.packages("forcats")
+if(!require(patchwork)) install.packages("patchwork")
+if(!require(scales)) install.packages("scales")
+if(!require(readr)) install.packages("readr")
+if(!require(ggthemes)) install.packages("ggthemes")
+if(!require(ggrepel)) install.packages("ggrepel")
+if(!require(GGally)) install.packages("GGally")
+if(!require(plotly)) install.packages("plotly")
+if(!require(forcats)) install.packages("forcats")
+if(!require(stringr)) install.packages("stringr")
+
+if(!require(ggpubr)) install.packages("ggpubr")
+if(!require(PupillometryR)) install.packages("PupillometryR")
+if(!require(ggridges)) install.packages("ggridges")
+if(!require(RColorBrewer)) install.packages("RColorBrewer")
+if(!require(magrittr)) install.packages("magrittr") # allow %<>%
+
+if(!require(vcd)) install.packages("vcd")
+if(!require(d3r)) install.packages("d3r")
+if(!require(ggalluvial)) install.packages("ggalluvial")
+if(!require(parcoords)) install.packages("parcoords")
+
+# pair plot
+if(!require(gridGraphics)) install.packages("gridGraphics")
+if(!require(gridExtra)) install.packages("gridExtra")
+
+library("data.table")
+library(mi)
+```
+
+```{r echo=FALSE}
+install.packages("stopwords")
+library("stopwords")
+library(tidyverse)
+library(tidytext)
+library("wordcloud")
+library("wordcloud2")
+library(textstem)
+library(rmarkdown)
+
+library("readxl")
+
+```
+
+
+
+```{r}
+skill_count <- read_excel("data/skill_count.xlsx")
+```
+
+
+```{r}
+skill_count %>% 
+  arrange(-freq) %>% 
+  ungroup() %>% 
+  as.data.frame() -> df_word
+
+rownames(df_word) <- df_word$Tech
+wordcloud2(df_word , size = 2, shape = 'movie') 
+```
+
+
+
+
+
+

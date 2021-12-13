@@ -1,0 +1,240 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# Results
+```{r echo=FALSE}
+# Basics
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(tibble)) install.packages("tibble")
+if(!require(tidyr)) install.packages("tidyr")
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(forcats)) install.packages("forcats")
+if(!require(patchwork)) install.packages("patchwork")
+if(!require(scales)) install.packages("scales")
+if(!require(readr)) install.packages("readr")
+if(!require(ggthemes)) install.packages("ggthemes")
+if(!require(ggrepel)) install.packages("ggrepel")
+if(!require(GGally)) install.packages("GGally")
+if(!require(plotly)) install.packages("plotly")
+if(!require(forcats)) install.packages("forcats")
+if(!require(stringr)) install.packages("stringr")
+
+if(!require(ggpubr)) install.packages("ggpubr")
+if(!require(PupillometryR)) install.packages("PupillometryR")
+if(!require(ggridges)) install.packages("ggridges")
+if(!require(RColorBrewer)) install.packages("RColorBrewer")
+if(!require(magrittr)) install.packages("magrittr") # allow %<>%
+
+if(!require(vcd)) install.packages("vcd")
+if(!require(d3r)) install.packages("d3r")
+if(!require(ggalluvial)) install.packages("ggalluvial")
+if(!require(parcoords)) install.packages("parcoords")
+
+# pair plot
+if(!require(gridGraphics)) install.packages("gridGraphics")
+if(!require(gridExtra)) install.packages("gridExtra")
+
+library("data.table")
+library(mi)
+```
+
+```{r}
+install.packages("stopwords")
+library("stopwords")
+library(tidyverse)
+library(tidytext)
+library("wordcloud")
+library("wordcloud2")
+library(textstem)
+library(rmarkdown)
+```
+
+```{r}
+
+# Loading
+library("readxl")
+# xls files
+data <- read_excel("data/clean_loc.xlsx")
+split(data, data$job_type_yubinghong) -> datas
+```
+
+
+
+```{r}
+# case sensitive
+
+library(magrittr)
+c("python", "SQL", "Hadoop", "MySQL", "tensorflow", "numpy") -> tech_requires
+
+for(tech_require in tech_requires){
+  new_column_name = paste0("require_", tech_require)
+  data %<>%
+    mutate(!!sym(new_column_name) := ifelse(grepl(tech_require, 
+                                                  `Job Description`, 
+                                                  ignore.case = T), 1, 0)) 
+  
+}
+
+data %>% View
+
+# non case sensitive 
+c("[[:space:]]R[[:space:]]" ,"[[:space:]]R\\.","[[:space:]]r[[:space:]]" ,"[[:space:]]r\\.")  -> tech_requires2
+
+for(tech_require in tech_requires2){
+  new_column_name = paste0("require_", tech_require)
+  data %<>%
+    mutate(!!sym(new_column_name) := ifelse(grepl(tech_require, 
+                                                  `Job Description`), 1, 0)) 
+  
+}
+paste0("require_", c("[[:space:]]R[[:space:]]" ,"[[:space:]]R\\.","[[:space:]]r[[:space:]]" ,"[[:space:]]r\\."))
+
+data %>%
+  mutate(require_r = max(`require_[[:space:]]R[[:space:]]`,
+                         `require_[[:space:]]R\\.`,
+                         `require_[[:space:]]r[[:space:]]`,
+                         `require_[[:space:]]r\\.`,
+                         na.rm=T)) %>%
+  select(-`require_[[:space:]]R[[:space:]]`,
+                           -`require_[[:space:]]R\\.`,
+                           -`require_[[:space:]]r[[:space:]]`,
+                           -`require_[[:space:]]r\\.`) %>%
+  select(`Avg_salary(k)`, contains("require_")) %>%
+  pivot_longer(2:ncol(.),
+               names_to = "Tech") %>%
+  filter(value !=0) -> skill_data
+
+skill_data %>%
+  ggplot() +
+  aes(x = Tech,
+      y = `Avg_salary(k)`) +
+  geom_boxplot() 
+
+skill_data %>%
+  group_by(Tech) %>%
+  summarise(n = n()) %>% 
+  anti_join(tibble(word = c(stopwords::stopwords("en")
+                            ))) %>% 
+  filter(nchar(word)>1) %>% 
+  arrange(-n) %>% 
+  ungroup() %>% 
+  slice(1:100) %>% 
+  as.data.frame() -> df_count
+
+rownames(df_count) <- df_count$word
+wordcloud2(df_count , size = 1, shape = 'movie') -> skill_wordcloud
+
+
+  
+```
+
+```{r}
+skill_count <- read_excel("data/skill_count.xlsx")
+```
+
+```{r}
+datas$BA %>%
+  select(`Job Description`) %>%
+  transmute(word = gsub("[[:punct:]]+|\\\n"," ", `Job Description`)) %>% 
+  separate_rows(word,sep = "[[:space:]]")  -> data_temp_BA
+
+data_temp_BA%>%
+  mutate(word = lemmatize_words(tolower(word))) %>% 
+  mutate(word = str_replace(word, "datum", "data")) %>%
+  group_by(word) %>% 
+  summarise(freq = n()) -> JD_wordcount_BA
+```
+
+```{r}
+skill_count %>% 
+  arrange(-freq) %>% 
+  ungroup() %>% 
+  as.data.frame() -> df_word
+
+rownames(df_word) <- df_word$Tech
+wordcloud2(df_word , size = 1, shape = 'movie') -> df_wordcloud
+```
+
+
+```{r}
+datas$DE %>%
+  select(`Job Description`) %>%
+  transmute(word = gsub("[[:punct:]]+|\\\n"," ", `Job Description`)) %>% 
+  separate_rows(word,sep = "[[:space:]]")  -> data_temp_DE
+
+data_temp_DE%>%
+  mutate(word = lemmatize_words(tolower(word))) %>% 
+  mutate(word = str_replace(word, "datum", "data")) %>%
+  group_by(word) %>% 
+  summarise(freq = n()) -> JD_wordcount_DE
+
+JD_wordcount_DE %>% 
+  anti_join(tibble(word = c(stopwords::stopwords("en")
+                            ))) %>% 
+  filter(nchar(word)>1) %>% 
+  arrange(-n) %>% 
+  ungroup() %>% 
+  slice(1:100) %>% 
+  as.data.frame() -> df_word_DE
+
+rownames(df_word_DE) <- df_word_DE$word
+wordcloud2(df_word_DE , size = 1, shape = 'movie') -> DE_wordcloud
+```
+
+```{r}
+datas$DS %>%
+  select(`Job Description`) %>%
+  transmute(word = gsub("[[:punct:]]+|\\\n"," ", `Job Description`)) %>% 
+  separate_rows(word,sep = "[[:space:]]")  -> data_temp_DS
+
+data_temp_DS%>%
+  mutate(word = lemmatize_words(tolower(word))) %>% 
+  mutate(word = str_replace(word, "datum", "data")) %>%
+  group_by(word) %>% 
+  summarise(freq = n()) -> JD_wordcount_DS
+
+JD_wordcount_DS %>% 
+  anti_join(tibble(word = c(stopwords::stopwords("en")
+                            ))) %>% 
+  filter(nchar(word)>1) %>% 
+  arrange(-freq) %>% 
+  ungroup() %>% 
+  slice(1:100) %>% 
+  as.data.frame() -> df_word_DS
+
+rownames(df_word_DS) <- df_word_DS$word
+wordcloud2(df_word_DS , size = 1, shape = 'movie') -> DS_wordcloud
+```
+
+
+
+```{r}
+datas$DA %>%
+  select(`Job Description`) %>%
+  transmute(word = gsub("[[:punct:]]+|\\\n"," ", `Job Description`)) %>% 
+  separate_rows(word,sep = "[[:space:]]")  -> data_temp_DA
+
+data_temp_DA%>%
+  mutate(word = lemmatize_words(tolower(word))) %>% 
+  mutate(word = str_replace(word, "datum", "data")) %>%
+  group_by(word) %>% 
+  summarise(freq = n()) -> JD_wordcount_DA
+
+JD_wordcount_DA %>% 
+  anti_join(tibble(word = c(stopwords::stopwords("en")
+                            ))) %>% 
+  filter(nchar(word)>1) %>% 
+  arrange(-freq) %>% 
+  ungroup() %>% 
+  slice(1:100) %>% 
+  as.data.frame() -> df_word_DA
+
+rownames(df_word_DA) <- df_word_DA$word
+wordcloud2(df_word_DA , size = 1, shape = 'movie') -> DA_wordcloud
+```
+
+
+
+
