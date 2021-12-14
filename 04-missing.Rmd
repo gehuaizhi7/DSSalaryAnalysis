@@ -221,12 +221,12 @@ missing_value_plot <- function(df, showcount=TRUE){
 ## Missing pattern plot 
 
 ### display with percentage
-```{r echo=FALSE, fig.width=17,fig.height=10}
+```{r echo=FALSE, fig.width=17,fig.height=12}
 missing_value_plot(ds_data,showcount = F)
 ```
 
 ### display with count number
-```{r echo=FALSE, fig.width=17,fig.height=10}
+```{r echo=FALSE, fig.width=17,fig.height=12}
 missing_value_plot(ds_data,showcount = T)
 ```
 
