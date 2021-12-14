@@ -1,9 +1,5 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
 # Results
+
 ```{r include=FALSE}
 # Basics
 if(!require(dplyr)) install.packages("dplyr")
@@ -64,7 +60,6 @@ split(data, data$job_type) -> datas
 
 ## Skill set vs salary
 
-
 ###find skill set 
 ```{r}
 # turn into lower case
@@ -104,9 +99,6 @@ data %>%
          -`require_sklearn`,
          -`require_scikit[[:space:]]learn`)-> data_2 
 
-# data_2%>%
-#   filter(require_r !=0) %>%
-#   select(`Job Description`)  
 
 data_2 %>%
   select(`Avg_salary(k)`, contains("require_")) %>%
@@ -123,50 +115,27 @@ skill_data %>%
   arrange(-freq)-> skill_count  
 
 median_ybh <- function(x) median(x,na.rm=T)
-#skill_data %>%
- # writeEXCEL("skill_data.xlsx")
+
 ```
 
 ### draw box plot for skillset vs salary
-```{r,fig.width = 15, fig.height = 10}
+```{r,fig.width = 12, fig.height = 8}
 skill_data %>%
   mutate(rank = fct_reorder(Tech, 
                             `Avg_salary(k)`, 
                             median_ybh))%>%
   ggplot(aes(x = rank,
-      y = `Avg_salary(k)`, fill = rank))+
-  geom_boxplot() +
+      y = `Avg_salary(k)`))+
+  geom_boxplot(show.legend = F) +
   theme(axis.text.x = element_text(hjust=0.8, angle=30)) +
   center_title + 
   labs(title = "Skill set vs salary") +
   labs(x = "Skill set") +
   labs(y = "Average salary in k")
-#scale_y_continuous(
+
 ```
 
-## draw ridgeline for skill set vs salary
-```{r,fig.width = 15, fig.height = 10}
-skill_data %>%
-  mutate(rank = fct_reorder(Tech, 
-                            `Avg_salary(k)`, 
-                            median_ybh))%>%
-  ggplot(aes(y = rank,
-      x = `Avg_salary(k)`, fill = rank))+
-  geom_density_ridges(alpha=0.6)  + 
-  labs(title = 'Industry vs salary') + 
-  labs(x = "Salary") +
-  labs(y = 'skill') +
-  theme(plot.title = element_text(hjust=0.5)) +
-  theme_ridges() + 
-  theme(legend.position = "none") 
-#scale_x_continuous(
-  
-```
 
-```{r}
-#skill_count %>%
- # writeEXCEL("skill_count.xlsx")
-```
 
 ## wordcloud for skillset
 ```{r}
@@ -185,9 +154,8 @@ data %>%
   drop_na(job_type)   %>% 
   mutate_if(is.numeric, ~replace(., is.na(.), 0))  %>% 
   ggplot(aes(y=`Avg_salary(k)`, 
-             x = job_type,
-             fill = job_type)) +
-  geom_boxplot() +
+             x = job_type)) +
+  geom_boxplot(show.legend = F) +
   labs(title = 'Average salary for job titles') + 
   labs(x = "Job titile") +
   labs(y = 'Average salary in unit k') +
@@ -271,8 +239,8 @@ data_academics %>%
                             `Avg_salary(k)`, 
                             median_ybh))%>%
   ggplot(aes(x = ranking,
-      y = `Avg_salary(k)`, fill = ranking))+
-  geom_boxplot() +
+      y = `Avg_salary(k)`))+
+  geom_boxplot(show.legend = F) +
   center_title + 
   labs(title = "Education vs salary") +
   labs(x = "Education") +
@@ -280,66 +248,6 @@ data_academics %>%
 
 ```
 
-## company size vs salary 不行！重来
-```{r,fig.width = 15, fig.height = 10}
-data%>% 
-  drop_na(Size)%>% 
-  ggplot(aes(x=fct_reorder(Size, `Avg_salary(k)`,median_ybh), 
-             y=`Avg_salary(k)`,fill = Size)) + 
-  geom_boxplot() + 
-  labs(title = 'Company size (employee number) vs salary') + 
-  labs(y = "Salary") +
-  labs(x = 'Average company employee') +
-  center_title
-
-```
-
-##ridge line for top 10 indutry vs salary
-
-### prepare data
-```{r,fig.width = 15, fig.height = 10}
-data%>% 
-  drop_na(Industry) %>% 
-  group_by(Industry)%>% 
-  summarise(n = n()) %>%
-  arrange(-n) %>%
-  mutate(industry_label = ifelse(min_rank(-n) <=10, Industry, "Others") %>%
-  factor %>% fct_relevel("Others", after=Inf)) -> industry_to_label_map
-
-data %>%
-  right_join(industry_to_label_map) -> industry_data
-```
-
-### plot ridge line for top 10 indutry vs salary
-```{r,fig.width = 15, fig.height = 10}
-industry_data%>% 
-  ggplot(aes(y=fct_reorder(industry_label, `Avg_salary(k)`,median_ybh) %>%
-               fct_relevel("Others", after=Inf),
-             x=`Avg_salary(k)`, fill = industry_label)) + 
-  geom_density_ridges(alpha=0.6)  + 
-  labs(title = 'Industry vs salary') + 
-  labs(x = "Salary") +
-  labs(y = 'Industry') +
-  theme(plot.title = element_text(hjust=0.5)) +
-  theme_ridges() + 
-  theme(legend.position = "none") 
-
-```
-
-### plot box plot  for top 10 indutry vs salary
-```{r,fig.width = 15, fig.height = 10}
-industry_data%>% 
-  ggplot(aes(x=fct_reorder(industry_label, `Avg_salary(k)`,median_ybh) %>%
-               fct_relevel("Others", after=Inf),
-             y=`Avg_salary(k)`, fill = industry_label)) + 
-  geom_boxplot() + 
-  labs(title = 'Industry vs salary') + 
-  theme(axis.text.x = element_text(hjust=0.9, angle=20)) +
-  labs(x = "Salary") +
-  labs(y = 'Industry') +
-  center_title
-   
-```
 
 ## ridge line for sector vs salary
 ### prepare data
@@ -356,7 +264,7 @@ data %>%
   right_join(sector_to_label_map) -> sector_data
 ```
 
-### ridge line for sector for
+### ridge line for sector VS salary
 ```{r,fig.width = 15, fig.height = 10}
 sector_data%>% 
   ggplot(aes(y=fct_reorder(sector_label, `Avg_salary(k)`,median_ybh) %>%
@@ -371,21 +279,7 @@ sector_data%>%
   theme(legend.position = "none")
 ```
 
-### box plot for sector vs salary
-```{r,fig.width = 15, fig.height = 10}
-sector_data%>% 
-  ggplot(aes(x=fct_reorder(sector_label, `Avg_salary(k)`,median_ybh) %>%
-               fct_relevel("Others", after=Inf),
-             y=`Avg_salary(k)`, fill = sector_label))+ 
-  geom_boxplot() + 
-  theme(axis.text.x = element_text(hjust=0.9, angle=25)) +
-  labs(title = 'Sector vs salary') + 
-  labs(y = "Salary") +
-  labs(x = 'Sector') +
-  center_title
-```
-
-###founded year vs salary
+###founded year vs salary hex plot
 ```{r,fig.width = 15, fig.height = 10}
 
 data%>% 
@@ -393,36 +287,12 @@ data%>%
   ggplot(aes(x=`Founded`,
              y=`Avg_salary(k)`)) +
   facet_wrap(~job_type) + 
-  geom_point(alpha = 0.15,size = 0.5) + 
+  geom_hex(bins = 50) +
+  scale_fill_gradient(low = "#DEEBF7", high = "#08519C") + 
   labs(title = 'Company founded year vs salary') + 
   labs(y = "Salary") +
   labs(x = 'Company founded year') +
-  center_title
-
-
-
-data%>% 
-  drop_na(Founded)%>% 
-  ggplot(aes(x=`Founded`,
-             y=`Avg_salary(k)`)) +
-  facet_wrap(~Sector) + 
-  geom_point(alpha = 0.15,size = 0.5) + 
-  labs(title = 'Company founded year vs salary') + 
-  labs(y = "Salary") +
-  labs(x = 'Company founded year') +
-  center_title
-
-
-
-data%>% 
-  drop_na(Founded)%>% 
-  ggplot(aes(x=`Founded`,
-             y=`Avg_salary(k)`,color = job_type)) +
-  facet_wrap(~Sector) + 
-  geom_point(alpha = 0.15,size = 0.5) + 
-  labs(title = 'Company founded year vs salary') + 
-  labs(y = "Salary") +
-  labs(x = 'Company founded year') +
+  theme_classic() +
   center_title
 
 
@@ -462,31 +332,43 @@ data_company%>%
   labs(title = 'Company vs salary') + 
   labs(y = "Company") +
   labs(x = 'Salary') +
-  center_title 
+  theme_linedraw() +
+  center_title
+  
 ```
 
 
 ##rating vs salary wrap up by industry, color by job title 
 ```{r,fig.width = 15, fig.height = 10}
-data%>% 
+
+cor_df <- data %>%
   drop_na(Rating)%>% 
   drop_na(Sector)%>% 
   drop_na(job_type)%>% 
+  group_by(Sector) %>%
+  summarize(cor = cor(Rating, `Avg_salary(k)`), beta = lm(`Avg_salary(k)`~Rating)$coefficients[2], meanprice = mean(`Avg_salary(k)`)) %>%
+  ungroup() %>%
+  arrange(beta) 
+
+data %>%
   ggplot(aes(x=`Rating`,
-             y=`Avg_salary(k)`, color = `job_type`)) +
-  facet_wrap(~Sector) + 
-  geom_point(alpha = 0.2,size = 0.8) + 
-  labs(title = 'Rating vs salary wrap up by industry, color by job title ') + 
-  labs(y = "Average salary") +
-  labs(x = 'Rating') +
-  center_title
+             y=`Avg_salary(k)`,color = `job_type`)) +
+  geom_line(stat="smooth",method = "lm", 
+              size = 0.8,
+              alpha = 0.5) + 
+  geom_point(size = .7,alpha = 0.2) +
+  facet_wrap(~fct_relevel(Sector, as.character(cor_df$Sector))) +
+  xlab('Rating') +
+  ylab("Average salary") +
+  labs(title = 'Rating vs salary wrap up by industry, color by job title ')
+  theme_linedraw()
   
   
 ```
 
 
 
-## Alluvial plot (Sector, Type of ownership, salary_group)
+## Alluvial plot (Sector, Type of ownership, salary_group) 
 ```{r,fig.height=20,fig.width=30}
 library("readxl")
 # xls files
@@ -499,7 +381,8 @@ data %>%
 
 data2 %>% 
   mutate(salary_group = if_else(`Avg_salary(k)`>100,"high",
-                            if_else(`Avg_salary(k)`<70,"low","medium"))) ->data2
+                            if_else(`Avg_salary(k)`<70,"low","medium"))) %>% 
+  mutate(salary_group = factor(salary_group,levels = c("high","medium","low")))->data2
 
 data2 %>% 
   group_by(Sector,`Type of ownership`,salary_group) %>% 
@@ -511,6 +394,7 @@ data2 %>%
   geom_text(stat = "stratum", aes(label = paste(after_stat(stratum), "\n", after_stat(count))),size=5) +
   scale_x_discrete(limits = c("Sector", "Type of ownership", "salary_group")) 
 
+
 ```
 
 
@@ -519,39 +403,55 @@ data2 %>%
 data <- read_excel("data/clean_data.xlsx")
 
 data %>%
-  drop_na(Revenue) %>%
+  drop_na(Revenue)  %>% 
+
   mutate(revenue_level = case_when(
-      Revenue =="$10+ billion (USD)" ~ "High(>1b)",
-      Revenue =="$5 to $10 billion (USD)" ~ "High(>1b)",
-      Revenue =="$2 to $5 billion (USD)" ~ "High(>1b)",
-      Revenue =="$1 to $2 billion (USD)" ~ "High(>1b)",
-      Revenue =="$500 million to $1 billion (USD)" ~ "Mid(25m~1b)",
-      Revenue =="$100 to $500 million (USD)" ~ "Mid(25m~1b)",
-      Revenue =="$50 to $100 million (USD)" ~ "Mid(25m~1b)",
-      Revenue =="$25 to $50 million (USD)" ~ "Mid(25m~1b)",
-      Revenue =="$10 to $25 million (USD)" ~ "Low(<25m)",
-      Revenue =="$5 to $10 million (USD)" ~ "Low(<25m)",
-      Revenue =="$1 to $5 million (USD)" ~ "Low(<25m)",
-      Revenue =="Less than $1 million (USD)" ~ "Low(<25m)"
+      Revenue =="$10+ billion (USD)" ~ "10b+",
+      Revenue =="$5 to $10 billion (USD)" ~ "10b",
+      Revenue =="$2 to $5 billion (USD)" ~ "5b",
+      Revenue =="$1 to $2 billion (USD)" ~ "2b",
+      Revenue =="$500 million to $1 billion (USD)" ~ "1b",
+      Revenue =="$100 to $500 million (USD)" ~ "0.5b",
+      Revenue =="$50 to $100 million (USD)" ~ "100m",
+      Revenue =="$25 to $50 million (USD)" ~ "50m",
+      Revenue =="$10 to $25 million (USD)" ~ "25m",
+      Revenue =="$5 to $10 million (USD)" ~ "10m",
+      Revenue =="$1 to $5 million (USD)" ~ "5m",
+      Revenue =="Less than $1 million (USD)" ~ "1m"
     )) -> data_revenue
 
+```
+
+```{r}
 data_revenue %>% 
   drop_na(`Avg_salary(k)`) %>%
   mutate(salary_group = if_else(`Avg_salary(k)`>100,"High(>100k)",
                             if_else(`Avg_salary(k)`<80,"low(<90K)","medium(80~100K)"))) -> data_revenue_salary
+```
 
+
+```{r}
 data_revenue_salary %>% 
+  mutate(revenue_level = factor(revenue_level,levels = 
+                                 c("1m",
+                                   "5m",
+                                   "10m",
+                                   "25m",
+                                   "50m",
+                                   "100m",
+                                   "0.5b",
+                                   "1b",
+                                   "2b",
+                                   "5b",
+                                   "10b",
+                                   "10b+"
+                                   ))) %>% 
   mutate(salary_group = factor(salary_group,levels = c("High(>100k)","medium(80~100K)","low(<90K)"))) %>% 
-  mutate(revenue_level = factor(revenue_level,levels = c("Low(<25m)","Mid(25m~1b)","High(>1b)"))) %>% 
   vcd::mosaic(salary_group~revenue_level, .,
               shade = TRUE,
               direction = c("v","h"),
               highlighting_fill = RColorBrewer::brewer.pal(3, "Blues"),
               spacing = vcd::spacing_dimequal(c(.3, 0, 0)),
-              labeling = labeling_border(tl_labels = c(FALSE, TRUE),
-                                       rot_labels = c(0, 0, 0, 0),
-                                       offset_varnames = c(0,0,0,2),
-                                       offset_labels = c(0,0,0,1)),
-             main = "Employee Salary Group v.s. Company Revenue Level")
+              main = "Employee Salary Group v.s. Company Revenue Level")
 
 

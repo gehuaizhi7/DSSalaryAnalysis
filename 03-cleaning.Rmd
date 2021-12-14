@@ -1,10 +1,5 @@
 # Data transformation
----
-output: html_document
-editor_options: 
-  chunk_output_type: console
----
-# Data transformation
+
 ```{r}
 if(!require(plyr)) install.packages("plyr")
 if(!require(dplyr)) install.packages("dplyr")
