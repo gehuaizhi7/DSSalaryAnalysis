@@ -42,30 +42,14 @@ library("data.table")
 library(mi)
 ```
 
-```{r echo=FALSE}
-ds_data = fread('data/DataScientist.csv') 
-ds_data %>%
-  select(3:ncol(.)) %>%
-  mutate_all(~ifelse(. %in% c("NA", -1, "Unknown", "Unknown / Non-Applicable"), NA, .))   %>%
-  as_tibble %>%
-  separate(`Salary Estimate`, into = c("low","high"), sep = "-",remove = T) %>%
-  mutate(low_salary = as.numeric(str_extract(low, "\\d+")),
-         high_salary = as.numeric(str_extract(high, "\\d+")),
-         avg_salary = (low_salary + high_salary) / 2)  %>% 
 
-  separate(Size, into = c("low_ppl","high_ppl"), sep = "to", remove = T) %>% 
-  mutate(lower_bound_employee = as.numeric(str_extract(low_ppl, "\\d+")),
-         upper_bound_employee = as.numeric(str_extract(high_ppl, "\\d+")),
-         avg_employee= case_when(
-           !is.na(lower_bound_employee) & is.na(upper_bound_employee) ~ lower_bound_employee,
-           T ~ (lower_bound_employee + upper_bound_employee) / 2)) ->ds_data
-```
 
 
 
 ```{r echo=FALSE}
+ds_data = load("cleaned.RData")
 head(ds_data)
-
+View(ds_data)
 ```
 
 ## missing value by column:

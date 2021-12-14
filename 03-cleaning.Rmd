@@ -152,7 +152,7 @@ ggplot() +
   center_title
 ```
 
-
+This graph indicates the counts of four types after we reclassify them.  From the table, we could clearly see that DA>DS>BA>DE.
 
 ```{r echo=FALSE}
 bind_rows(
