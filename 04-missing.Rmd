@@ -58,6 +58,10 @@ View(ds_data)
 colSums(is.na(ds_data)) %>%
   sort(decreasing = TRUE)
 ```
+the dataset we have has missing data. Their values are NA, -1, Unknown and NOn-Applicable. We change all of them into NA to make the dataset more clear and concise. 
+Then we converted “Salary Estimate” to columns “low_salary”, “high_salary”, and “avg_salary”. 
+Then we converted “Emplyee” to columns “lower_bound_employee”, “high_bound_employee”, “avg_bound_employee”. 
+
 
 ## choose first ten company 
 
@@ -81,6 +85,9 @@ ggplot() +
   scale_alpha_manual(values = c(0.5, 0.9)) +
   theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95))
 ```
+For each columns, their number of missions values are show below. As we can see from the form, most of the values under “easy apply” and “competitor” labels are missing. That means we should avoid to investigate the relation of salary and these two features. 
+Among all features, “Sectors”, “Industry”, and “number of employees” are least missing values. We want to investigate relations of these features and salary level. 
+
 
 ## use mi library draw heatmap and check missing value
 

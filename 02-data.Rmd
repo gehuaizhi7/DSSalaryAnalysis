@@ -1,4 +1,17 @@
 # Data sources
-#data link: https://github.com/picklesueat/data_jobs_data
 
 
+## data link: https://github.com/picklesueat/data_jobs_data
+
+
+The data was collected from Glassdoor, an anonymous review service for current and past employees in the United States. On Glassdoor, users may anonymously post and view salaries, as well as search for and apply for jobs. Binghong Yu was responsible for collecting the data. We tried to scrap the website. however the api provided by Glassdoor was taken down and no longer available to the public. As a result, we failed to scrap the website. But we found the scraped data from GitHub, and downloaded it. 
+
+
+The dataset is created by picklesueat from Glassdoor. This repo contains four files, including: BusinessAnalyst.csv (4092 * 15), DataAnalyst.csv (5631 * 15), DataEngineer.csv (2528 * 15), and DataScientist.csv (3909 * 15).Each gives information about a branch of data related jobs. For each of them, there are 15 features: 'Job Title', 'Salary Estimate', 'Job Description', 'Rating', 'Company Name', Location', 'Headquarters', 'Size', 'Founded', 'Type of ownership', 'Industry', Sector', 'Revenue', 'Competitors', 'Easy Apply’.
+There were a few problems with the raw dataset, and we cleaned it so that it could giver much more clear information for the further analysis. 
+
+First of all, the value of salary feature contains words “GlassDoor estimated”. We only want the actual number of salary, so we deleted the words contained in the salary column and replaced "k", representing thousands, as "1,000".
+
+Secondly, we modified job titles. For example, some of the job titles contains key words "Jr" and "Sr" while others uses "Junior" and "Senior". To make the data make more sense, we modified them to have the same representation. We made them follow a certain pattern to give a more clear information. 
+
+Thirdly, we modified number of employer. For some of the data, number of employers was represented by a range, while others were represented by a specific number. This made the analysis more complicated. We take mean of the range and let the mean to be the new value of this feature

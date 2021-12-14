@@ -117,6 +117,7 @@ median_ybh <- function(x) median(x,na.rm=T)
 
 ```
 ## wordcloud for skillset
+
 ```{r echo=FALSE, fig,width = 3, fig.height = 3}
 skill_count %>% 
   arrange(-freq)%>% 
@@ -126,6 +127,15 @@ skill_count %>%
 rownames(df_word) <- df_word$Tech
 wordcloud2(df_word , size = 2, shape = 'data') 
 ```
+A very important aspect of salary is the skill set employees have. So we investigated the job description to find key words of skill sets.
+
+From job description, find the frequency of appearance of certain skill sets, such as python, r, pytorch. 
+
+We used word cloud to represent the frequency of each key word appeared in the sets. 
+
+The result word could shows us the frequency of each skill required in the data science related jobs. 
+
+The final result shows us that “R” and “SQL” is the most frequently required skill for all data related jobs.
 
 
 ### Box plot for skillset vs salary
@@ -163,7 +173,7 @@ data %>%
   labs(y = 'Average salary in unit k') +
   center_title
 ```
-
+We want to find the relation between salary amount and job titles. We classified all jobs in the dataset into four classes: Business Analyst, Data Analyst, Data Engineer and Data Scientist. Box plot is a great method to get to understand the distribution of salary amount in those four group of employees, as it shows us the mean, fist quantile, last quintile and can also list all outliers. By putting four jobs together, we can compare them and find out which one normally get to be paid more. First of all, DA,DE and DS have the same highest salary, while BA’s highest salary is relatively lower. Secondly, DS job salaries are less concentrated: Data Scientists can be paid very high and also be very low, while Business Analysts normally will not be paid very low, but also can not be too high. Among all job positions, Data Engineers salaries are concentrated at a higher amount.
 
 ## Education level vs salary
 ```{r echo=FALSE}
@@ -247,6 +257,7 @@ data_academics %>%
   center_title 
 
 ```
+Education level of an employee should be a key factor in their salary amount. We want to verify this guess. We utilized box plot to show salary distribution of jobs that require different education level of their applicants. As shown in the graph, jobs that require applicants PhD degrees normally pay more: their mean, first quantile and last quantile are all higher than the jobs that require master degree or lower. Employees with PhD degree get to be paid 100k per year on avaegae.  As a takeaway, applicants are encouraged to pursue higher degrees to get higher paid jobs. On average, PhDs get to be paid more than 20k than employees with lower education degrees.
 
 
 ## Ridge line plot for sector vs salary
@@ -278,6 +289,9 @@ sector_data%>%
   theme(axis.title.x = element_text(angle=0, hjust = 0.5)) +
   center_title 
 ```
+We want to find out if job salary is affected by industry in which this job belongs. And ridge line is a great choice because it can show us the distribution of salary amount over every industry that the dataset includes.
+As shown above, the result ridge line shows us salary distribution over 25 high-paid industries such as biotech, media, information technology and so on. They are sorted based on the mean salary amount. Among all industries, Biotech, Media, Arts, Entertainment & Recreation have the highest average salary compared to other industries. While Arts, Entertainment & Recreation having a high average salary, its first quartile is very low. That means a bigger portion of employees in this industry are paid with a very average salary, and a small portion of employees in this industry are very high-paid. Employees in the industry of Information Industry have a very spread-out distribution of salary amount. That means there are many of them being high-paid and there are also many of them being low-paid. Ridge lines of some of the industries, for example Telecommunications, have multiple peaks, meaning that among one industry, there are other key factors to determine an employee’s salary amount. This factor might be company and positions. We will discuss this later in the report. Employees in the industries of Mining, Agricultural, and Non-profit companies get relatively lower amount of salary comparing to others.
+
 
 ## Hex plot for founded year vs salary hex plot
 ```{r echo=FALSE, fig.width=8.5}
@@ -296,6 +310,8 @@ data%>%
   center_title
 
 ```
+We want to find which aspect of companies affect salaries. We guess that year founded of a company will affect salary. We verify this guess by plotting out salary and company year founded on a hex map. We chose this plot because we can easily locate concentration of a set of data on the graph and we can also examine the distribution of peaks over the map. In the result hex map, we found that for BA and DA positions, highest salaries are all provided by companies that are founded in recent years, while for DE and DS positions, this pattern is not as clear as others. We also find out that, for BA and DA positions, salaries in young companies normally tend to concentrate at a same level, as shown as the darker parts in the graph. While for DE and DS, there are hardly darker spots, indicating that the salaries are relatively evenly distributed. 
+
 
 ## Cleveland dot plot for Company vs salary
 ```{r echo=FALSE}
@@ -331,6 +347,8 @@ data_company%>%
   center_title
   
 ```
+We want to know which company pays more to their employees. We classify the employees into four different groups by their job titles, because different job titles apparently will have distinct salary level. We select top 20 companies who pay the most to their employees among all companies in the data set. We use Cleveland dot plot because it shows the difference salary level and also indicates witch jobs title is paid more. As we can see from the plot, Apple, Amazon and IBM pays the most to their employees. Different color dots represents employees in different job titles. We can see from the plot that Data Engineers are normally high paid among all companies listed. And Business Analysts are normally low-paid. In different companies, Data Engineers have very distinct salaries, while Business Analysts and Data Analysts are paid with a concentrated salary amount. 
+
 
 ## Glassdoor rating vs salary, wrap by Industry
 ```{r echo=FALSE, fig.height=7, fig.width=9}
@@ -458,3 +476,6 @@ data_revenue_salary %>%
 
 
 ```
+Revenue level of a company can be a very important factor to inspect on the salary of data science related jobs in the job market. Our guess is that for companies that have higher revenue, they pay more salary to their employees. A great way to find out the truth is to use the mosaic plot. 
+A mosaic plot is a sort of stacked bar chart that displays data as percentages in groups. It can show us the contingency table graphically. 
+From the result mosaic graph, we can find out that companies that have higher revenue will tend to have a larger portion of their employees being high paid. And medium revenue companies have the smallest portion of employees being high paid comparing to other companies.
