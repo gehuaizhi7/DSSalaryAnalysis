@@ -134,6 +134,8 @@
 <div id="box-plot-for-skillset-vs-salary" class="section level3" number="5.1.1">
 <h3><span class="header-section-number">5.1.1</span> Box plot for skillset vs salary</h3>
 <p><img src="finalproj_files/figure-html/unnamed-chunk-8-1.png" width="816" /></p>
+<p>We want to analyze the relationship between skill set and the salary. If we want to get a high salary, what skill do we need to master?</p>
+<p>We extract the words about the skill set and take the median of every job that includes the specific words. The boxplot ranks the skills by the median salary. From the graph, we can know that the most paid skills are pytorch, tensorflow and spacy, which are skills about machine learning and natural language processing. It means that if we want to get a high paid job, we need to master the skills of the machine learning. Some skills like excel, database and data visualization appeared frequently in the job description but the median of the job salary including these skills is low. It means that the skills like excel are base skills which are required by most of the jobs. But mastering these skills doesn’t mean getting a high paid job.</p>
 </div>
 </div>
 <div id="salary-vs-job-title" class="section level2" number="5.2">
@@ -159,10 +161,17 @@
 <div id="glassdoor-rating-vs-salary-wrap-by-industry" class="section level2" number="5.7">
 <h2><span class="header-section-number">5.7</span> Glassdoor rating vs salary, wrap by Industry</h2>
 <p><img src="finalproj_files/figure-html/unnamed-chunk-17-1.png" width="864" /></p>
+<p>We want to analyze the relationship between rating and salary. In different industry, does high rating company always pay high salary? The rating comes from the users in the Glassdoor.</p>
+<p>We draw the scatter plot of rating and salary. Every graph represents a job industry, and every color represents a job title.</p>
+<p>In most of the graphs, rating and salary has a slightly positive correlation, excluding the industries that has few data related jobs. However, some industries have a different situation. For example, in the Real Estate industry, the higher the rating is, the lower the salary is. The reason of this situation may be about our data collection. Glassdoor is a website that everyone can rate and write comments. So, the data is not very authentic. And we can see that different job titles can influence the relationship between rating and salary. For example, in the finance industry, the Data Engineer job salary has a negative correlation with rating but the other three job salary has a slightly positive correlation.</p>
+<p>So, we come to a conclusion that in the most situation, the high rating comes with a high salary.</p>
 </div>
 <div id="alluvial-plot-sector-type-of-ownership-salary_group" class="section level2" number="5.8">
 <h2><span class="header-section-number">5.8</span> Alluvial plot (Sector, Type of ownership, salary_group)</h2>
 <p><img src="finalproj_files/figure-html/unnamed-chunk-18-1.png" width="2208" /></p>
+<p>We want to analyze how the sector and the type of ownership influence the salary level as well as the relation of the sector and the type of ownership.</p>
+<p>Alluvial plots are a form of sankey diagrams that are a great tool for exploring categorical data. They group categorical data into flows that can easily be traced in the diagram. So, we can show the relationship of the three section (“sector”, “type of ownership” and “salary”) clearly.</p>
+<p>We divided the salary into three groups. If the average salary is larger than 100k dollars, we assume it is “high salary”. If it is less than 70k dollars, we assume it is “low salary”. Otherwise, we assume it is “medium salary”. Alluvial plot shows that the type of ownership of the company has little influence on the salary level. For some type of ownership that account for a small part, they always pay low level of salary. For some sector that account for a small part, most of them pay low level of salary. But Biotech &amp; Pharmaceuticals companies pay high level of salary even they account for a small part. Most high-level paid jobs are in the Information Technology sector, because there are many jobs in the Information Technology companies. Most Business Service companies, and most Information Technology companies are private companies. But most Finance companies are private companies, and all the Biotech &amp; Pharmaceuticals companies are public companies.</p>
 </div>
 <div id="employee-salary-group-vs-company-revenue-level---mosaic-plot" class="section level2" number="5.9">
 <h2><span class="header-section-number">5.9</span> Employee Salary Group VS Company Revenue Level - Mosaic Plot</h2>

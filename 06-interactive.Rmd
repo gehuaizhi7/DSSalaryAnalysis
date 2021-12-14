@@ -2,3 +2,9 @@
 
 
 <iframe src="d3.html" width="750" height="550"></iframe>
+
+This interactive component shows the relationship between company location, job title, and salary.
+
+The tool is interactive. There are 4 checkboxes on the graph, representing Data Analytics, Data Scientist, Business Analytics, and Data Engineer. If you check the checkbox which represents a job title, the d3 graph will show some circles. Every circle represents a state in the United States. The position in the map of the circle represents the state location. The radius of the circles represent the salary level. The larger the radius is, the higher the average salary is. By checking the checkbox, you can see the salary of every state intuitively. When you move your mouse to a certain circle, it will show a box under the graph including the information about the state name, job type, count, and average salary.
+
+Data Analytics jobs are widely demanded. Data Scientist, Business Analytics, and Data Engineer job demands are ditributed on the west side as well as the east side. The salary of the Data Scientist is the highest. The salary of the Data Engineer is the second highest. There is little difference bewteen the salary of the Data Analytics and the Business Analytics. And Business Analytics, and Data Engineer jobs are always demanded together.
