@@ -81,6 +81,8 @@ The following missing pattern graph shows the pattern of missing values. Blue re
 
 ## use mi library draw heatmap and check missing value
 
+This heat map gives the missing date of each features. As we can see from the map, “competitors”, “revenues” and “founded years” are missing in a massive amount. So we avoid to do studies on these data.
+
 ```{r echo=FALSE, fig.height=6}
 x <- mi::missing_data.frame(ds_data %>% as.data.frame())
 image(x)

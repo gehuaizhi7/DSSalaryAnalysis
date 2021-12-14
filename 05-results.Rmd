@@ -138,7 +138,7 @@ The result word could shows us the frequency of each skill required in the data 
 The final result shows us that “R” and “SQL” is the most frequently required skill for all data related jobs.
 
 
-### Box plot for skillset vs salary
+## Box plot for skillset vs salary
 ```{r echo=FALSE, fig.width=8.5}
 skill_data %>%
   mutate(rank = fct_reorder(Tech, 
