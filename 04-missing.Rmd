@@ -1,10 +1,6 @@
 # Missing values 
 
-## load data & preprocess data
- 
-- replace -1, Unknown/ Non-Applicable to NA 
-- convert 'Salary Estimate' to col: low_salary, high_salary, avg_salary
-- convert 'employee' to col: lower_bound_employee, upper_bound_employee, avg_employee
+
 
 ```{r echo=FALSE}
 # Basics
@@ -37,19 +33,16 @@ if(!require(parcoords)) install.packages("parcoords")
 # pair plot
 if(!require(gridGraphics)) install.packages("gridGraphics")
 if(!require(gridExtra)) install.packages("gridExtra")
-
 library("data.table")
+library("readxl")
 library(mi)
 ```
 
 
 
-
-
 ```{r echo=FALSE}
-ds_data = load("cleaned.RData")
-head(ds_data)
-View(ds_data)
+ds_data <- read_excel("data/clean_loc.xlsx")
+
 ```
 
 ## missing value by column:
@@ -58,12 +51,11 @@ View(ds_data)
 colSums(is.na(ds_data)) %>%
   sort(decreasing = TRUE)
 ```
-the dataset we have has missing data. Their values are NA, -1, Unknown and NOn-Applicable. We change all of them into NA to make the dataset more clear and concise. 
-Then we converted “Salary Estimate” to columns “low_salary”, “high_salary”, and “avg_salary”. 
-Then we converted “Emplyee” to columns “lower_bound_employee”, “high_bound_employee”, “avg_bound_employee”. 
+For each columns, their number of missing values are show below. As we can see from the form, most of the values under “easy apply” and “competitor” labels are missing. That means we should avoid to investigate the relation of salary and these two features. 
+Among all features, “Sectors”, “Industry”, and “number of employees” are least missing values. Thus, we want to investigate more about relations of these features and salary level. 
 
 
-## choose first ten company 
+## display first ten company 
 
 ```{r echo=FALSE, fig.width = 13}
 n_row = nrow(ds_data)
@@ -72,40 +64,40 @@ variables = colnames(ds_data)
 ds_data %>% 
   slice(1:10) %>%
   mutate_all( as.character) %>%
-  relocate(`Company Name`, 1) %>%
+  relocate(`Name of Company`, 1) %>%
   pivot_longer(2:ncol(.)) %>%
   mutate(missing = ifelse(is.na(value), T, F)) %>%
 
 ggplot() +
   geom_tile(aes(x=name,
-                y=`Company Name`,
+                y=`Name of Company`,
                 fill=factor(missing))) + 
   labs(x = 'variable', y = 'company')+
   scale_fill_manual(values = c("grey60", alpha( "cornflowerblue", 0.6))) +
   scale_alpha_manual(values = c(0.5, 0.9)) +
   theme(axis.text.x = element_text(angle = 20,hjust = 0.95,vjust = 0.95))
 ```
-For each columns, their number of missions values are show below. As we can see from the form, most of the values under “easy apply” and “competitor” labels are missing. That means we should avoid to investigate the relation of salary and these two features. 
-Among all features, “Sectors”, “Industry”, and “number of employees” are least missing values. We want to investigate relations of these features and salary level. 
-
+The following missing pattern graph shows the pattern of missing values. Blue represents data that are missing, while gray represents data that are not missing. We can find out from the map that “revenue”, “competitors”, and “year founded”  have most missing value in the dataset. Besides this, we also find out that there is no correlation between features that are missing, that is, no feature leads to other features’ data missing. Therefore, we can investigate each feature without being intervened by other feature’s missing data.
 
 ## use mi library draw heatmap and check missing value
 
-```{r echo=TRUE, fig.height=6}
+```{r echo=FALSE, fig.height=6}
 x <- mi::missing_data.frame(ds_data %>% as.data.frame())
 image(x)
 ```
 
-show patterns of missing value 
-```{r}
+This table displays 63 missing patterns.
+```{r echo=FALSE}
 levels(x@patterns)
 ```
 
+This table displays missing patterns and how many time it appears.
 ```{r echo=FALSE}
 summary(x@patterns)
 ```
 
-```{r}
+
+```{r echo=FALSE, fig.height= 8, fig.width= 10}
 missing_value_plot <- function(df, showcount=TRUE){
   
   missing_patterns <- data.frame(is.na(df)) %>%
@@ -226,18 +218,19 @@ missing_value_plot <- function(df, showcount=TRUE){
 
 ```
 
-## draw the missing pattern plot using the function from homework
-```{r echo=FALSE, fig.width=15,fig.height=13}
+## Missing pattern plot 
+
+### display with percentage
+```{r echo=FALSE, fig.width=17,fig.height=10}
 missing_value_plot(ds_data,showcount = F)
 ```
 
-
-```{r echo=FALSE, fig.width=15,fig.height=13}
+### display with count number
+```{r echo=FALSE, fig.width=17,fig.height=10}
 missing_value_plot(ds_data,showcount = T)
 ```
 
-The most frequent missing pattern is the pattern where Easy.apply and Competitors are both missing, while the other variables are not. Moreover, Easy.apply and Competitors are more likely to be missing in the dataset than the other variables. 
-
+The most frequent missing pattern is the pattern where 'Easy.apply' and 'Competitors' are both missing, while the other variables are not. Moreover, 'Easy.apply' and 'Competitors' are more likely to be missing in the dataset than the other variables. 
 While other values are missing, the values of Company.name, index, Job.Description, Job.Title, Location, Salary.Estimate, and X are all presenting in the dataset. 
 
 The features Industry and Sector seem to be missing at the same time. 

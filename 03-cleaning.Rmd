@@ -1,6 +1,3 @@
----
-output: html_document
----
 # Data transformation
 
 ```{r echo=FALSE}
@@ -72,8 +69,7 @@ writeEXCEL <- function(df, file = filename, fgFill = "#007b58") {
 }
 
 ```
-
-The data we have are four csv files, which are grouped by four kinds of  job titles: data science, data analyst, data engineer and business analyst. However, through scanning the dataset, we found that some of the tags inside the document are incorrect. Thus, the first step we take is through searching keywords inside the job title column and job description column, re-classifying our data. The sequence we labeled them is based on counts of their appearance inside the entire dataset. For instance, a job could both contain keywords for data science and data analyst. However, since data analyst appears more frequently, we tagged this job as data scientist. Also, missing values are written in different formats such as “-1”, “not applicable” . They are also replaced by NA. In addition, we separate the estimated salary into continuous data form: min_salary, max_salary and mean_salary.
+The data we have are four csv files, which are grouped by four kinds of  job titles: data science, data analyst, data engineer and business analyst. However, through scanning the dataset, we found that some of the tags inside the document are incorrect. Thus, the first step we take is through searching keywords inside the job title column and job description column, re-classifying our data. The sequence we labeled them is based on counts of their appearance inside the entire dataset. For instance, a job could both contain keywords for data science and data analyst. However, since data analyst appears more frequently, we tagged this job as data scientist. Meanwhile, we also fix typos and format similar meaning job titles into one, such as ‘Sr. Data scientist’ means the same as ‘Senior Data scientist’. Also, missing values are written in different formats such as “-1”, “not applicable” . They are replaced by NA. In addition, we separate the estimated salary into continuous data form: min_salary, max_salary and mean_salary to better analyze the dataset. Also, the location column is separated into “city” and “state” to be used inside the D3 interactive plot.
 
 
 ```{r echo=FALSE}
@@ -94,7 +90,8 @@ inner_join(
 
 ```
  
-Here are 8 lables after searching through 
+Here is a list of labels based on keyword search in data title and data description.
+
 ```{r echo=FALSE}
 bind_rows(
   df_ba,
@@ -153,6 +150,7 @@ ggplot() +
 ```
 
 This graph indicates the counts of four types after we reclassify them.  From the table, we could clearly see that DA>DS>BA>DE.
+
 
 ```{r echo=FALSE}
 bind_rows(

@@ -35,3 +35,9 @@ ridge-line-plot-for-sector-vs-salary
 glassdoor-rating-vs-salary-wrap-by-industry
 hex-plot-for-founded-year-vs-salary-hex-plot
 cleveland-dot-plot-for-company-vs-salary
+data-link-httpsgithub.compicklesueatdata_jobs_data
+display-first-ten-company
+draw-the-missing-pattern-plot-with-hw-function
+display-with-percentage
+display-with-count-number
+missing-pattern-plot
