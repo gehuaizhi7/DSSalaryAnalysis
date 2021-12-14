@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 3 Data transformation | DSSalaryAnalysis</title>
-  <meta name="description" content="Chapter 3 Data transformation | DSSalaryAnalysis" />
+  <title>Chapter 3 Data transformation | finalproj.knit</title>
+  <meta name="description" content="" />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 3 Data transformation | DSSalaryAnalysis" />
+  <meta property="og:title" content="Chapter 3 Data transformation | finalproj.knit" />
   <meta property="og:type" content="book" />
   
   
@@ -16,15 +16,13 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 3 Data transformation | DSSalaryAnalysis" />
+  <meta name="twitter:title" content="Chapter 3 Data transformation | finalproj.knit" />
   
   
   
 
-<meta name="author" content="Huaizhi Ge, Huanyu Jiang and Binghong Yu" />
 
 
-<meta name="date" content="2021-12-13" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -53,6 +51,11 @@
 
 <link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<script src="libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="libs/wordcloud2-0.0.1/wordcloud.css" rel="stylesheet" />
+<script src="libs/wordcloud2-0.0.1/wordcloud2-all.js"></script>
+<script src="libs/wordcloud2-0.0.1/hover.js"></script>
+<script src="libs/wordcloud2-binding-0.2.1/wordcloud2.js"></script>
 
 
 
@@ -81,11 +84,14 @@
 <li class="chapter" data-level="3" data-path="data-transformation.html"><a href="data-transformation.html"><i class="fa fa-check"></i><b>3</b> Data transformation</a></li>
 <li class="chapter" data-level="4" data-path="missing-values.html"><a href="missing-values.html"><i class="fa fa-check"></i><b>4</b> Missing values</a>
 <ul>
-<li class="chapter" data-level="4.1" data-path="missing-values.html"><a href="missing-values.html#load-data-preprocess-data"><i class="fa fa-check"></i><b>4.1</b> load data &amp; preprocess data</a></li>
-<li class="chapter" data-level="4.2" data-path="missing-values.html"><a href="missing-values.html#missing-value-by-column"><i class="fa fa-check"></i><b>4.2</b> missing value by column:</a></li>
-<li class="chapter" data-level="4.3" data-path="missing-values.html"><a href="missing-values.html#choose-first-ten-company"><i class="fa fa-check"></i><b>4.3</b> choose first ten company</a></li>
-<li class="chapter" data-level="4.4" data-path="missing-values.html"><a href="missing-values.html#use-mi-library-draw-heatmap-and-check-missing-value"><i class="fa fa-check"></i><b>4.4</b> use mi library draw heatmap and check missing value</a></li>
-<li class="chapter" data-level="4.5" data-path="missing-values.html"><a href="missing-values.html#draw-the-missing-pattern-plot-using-the-function-from-homework"><i class="fa fa-check"></i><b>4.5</b> draw the missing pattern plot using the function from homework</a></li>
+<li class="chapter" data-level="4.1" data-path="missing-values.html"><a href="missing-values.html#missing-value-by-column"><i class="fa fa-check"></i><b>4.1</b> missing value by column:</a></li>
+<li class="chapter" data-level="4.2" data-path="missing-values.html"><a href="missing-values.html#display-first-ten-company"><i class="fa fa-check"></i><b>4.2</b> display first ten company</a></li>
+<li class="chapter" data-level="4.3" data-path="missing-values.html"><a href="missing-values.html#use-mi-library-draw-heatmap-and-check-missing-value"><i class="fa fa-check"></i><b>4.3</b> use mi library draw heatmap and check missing value</a></li>
+<li class="chapter" data-level="4.4" data-path="missing-values.html"><a href="missing-values.html#missing-pattern-plot"><i class="fa fa-check"></i><b>4.4</b> Missing pattern plot</a>
+<ul>
+<li class="chapter" data-level="4.4.1" data-path="missing-values.html"><a href="missing-values.html#display-with-percentage"><i class="fa fa-check"></i><b>4.4.1</b> display with percentage</a></li>
+<li class="chapter" data-level="4.4.2" data-path="missing-values.html"><a href="missing-values.html#display-with-count-number"><i class="fa fa-check"></i><b>4.4.2</b> display with count number</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i><b>5</b> Results</a>
 <ul>
@@ -115,7 +121,7 @@
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">DSSalaryAnalysis</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"></a>
           </h1>
         </div>
 
@@ -127,8 +133,8 @@
 <h1><span class="header-section-number">Chapter 3</span> Data transformation</h1>
 <p>The data we have are four csv files, which are grouped by four kinds of job titles: data science, data analyst, data engineer and business analyst. However, through scanning the dataset, we found that some of the tags inside the document are incorrect. Thus, the first step we take is through searching keywords inside the job title column and job description column, re-classifying our data. The sequence we labeled them is based on counts of their appearance inside the entire dataset. For instance, a job could both contain keywords for data science and data analyst. However, since data analyst appears more frequently, we tagged this job as data scientist. Meanwhile, we also fix typos and format similar meaning job titles into one, such as ‘Sr. Data scientist’ means the same as ‘Senior Data scientist’. Also, missing values are written in different formats such as “-1”, “not applicable” . They are replaced by NA. In addition, we separate the estimated salary into continuous data form: min_salary, max_salary and mean_salary to better analyze the dataset. Also, the location column is separated into “city” and “state” to be used inside the D3 interactive plot.</p>
 <p>Here is a list of labels based on keyword search in data title and data description.</p>
-<pre><code>## [1] &quot;is_ds_byjd&quot; &quot;is_da_byjt&quot; &quot;is_da_byjd&quot; &quot;is_ba_byjt&quot; &quot;is_ba_byjd&quot;
-## [6] &quot;is_de_byjt&quot; &quot;is_de_byjd&quot; &quot;is_ds_byjt&quot;</code></pre>
+<pre><code>## [1] &quot;is_ds_byjd&quot; &quot;is_da_byjt&quot; &quot;is_da_byjd&quot; &quot;is_ba_byjt&quot;
+## [5] &quot;is_ba_byjd&quot; &quot;is_de_byjt&quot; &quot;is_de_byjd&quot; &quot;is_ds_byjt&quot;</code></pre>
 <p><img src="finalproj_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>This graph indicates the counts of four types after we reclassify them. From the table, we could clearly see that DA&gt;DS&gt;BA&gt;DE.</p>
 
