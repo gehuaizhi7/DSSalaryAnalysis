@@ -37,7 +37,7 @@ library(mi)
 theme(plot.title = element_text(hjust=0.5))  -> center_title
 ```
 
-```{r}
+```{r include=FALSE}
 if(!require(stopwords)) install.packages("stopwords")
 library("stopwords")
 library(tidyverse)
@@ -51,17 +51,16 @@ median_ybh <- function(x) median(x,na.rm=T)
 mean_ybh <- function(x) mean(x,na.rm = T)
 ```
 
-```{r}
+```{r echo=FALSE}
 # Loading
 library("readxl")
-data <- read_excel("/Users/binghongyu/Desktop/DSSalaryAnalysis/data/clean_loc.xlsx")
+data <- read_excel("data/clean_loc.xlsx")
 split(data, data$job_type) -> datas
 ```
 
-## Skill set vs salary
 
-###find skill set 
-```{r}
+
+```{r echo=FALSE}
 # turn into lower case
 data%>% 
   mutate(lower_jd = tolower(`Job Description`)) -> data
@@ -117,28 +116,8 @@ skill_data %>%
 median_ybh <- function(x) median(x,na.rm=T)
 
 ```
-
-### draw box plot for skillset vs salary
-```{r,fig.width = 12, fig.height = 8}
-skill_data %>%
-  mutate(rank = fct_reorder(Tech, 
-                            `Avg_salary(k)`, 
-                            median_ybh))%>%
-  ggplot(aes(x = rank,
-      y = `Avg_salary(k)`))+
-  geom_boxplot(show.legend = F) +
-  theme(axis.text.x = element_text(hjust=0.8, angle=30)) +
-  center_title + 
-  labs(title = "Skill set vs salary") +
-  labs(x = "Skill set") +
-  labs(y = "Average salary in k")
-
-```
-
-
-
 ## wordcloud for skillset
-```{r}
+```{r echo=FALSE, fig,width = 3, fig.height = 3}
 skill_count %>% 
   arrange(-freq)%>% 
   ungroup() %>% 
@@ -148,8 +127,27 @@ rownames(df_word) <- df_word$Tech
 wordcloud2(df_word , size = 2, shape = 'data') 
 ```
 
+
+### Box plot for skillset vs salary
+```{r echo=FALSE, fig.width=8.5}
+skill_data %>%
+  mutate(rank = fct_reorder(Tech, 
+                            `Avg_salary(k)`, 
+                            median_ybh))%>%
+  ggplot(aes(x = rank,
+      y = `Avg_salary(k)`))+
+  geom_boxplot(show.legend = F) +
+  theme(axis.text.x = element_text(hjust=0.85, angle=30)) +
+  labs(title = "Skill set vs salary") +
+  labs(x = "Skill set") +
+  labs(y = "Average salary in k")+ 
+  center_title 
+
+```
+
+
 ## salary vs job title 
-```{r,fig.width = 15, fig.height = 10}
+```{r echo=FALSE, fig.width=8.5}
 data %>%
   drop_na(job_type)   %>% 
   mutate_if(is.numeric, ~replace(., is.na(.), 0))  %>% 
@@ -161,11 +159,10 @@ data %>%
   labs(y = 'Average salary in unit k') +
   center_title
 ```
-This plot compares salary for four job titles, filled with four colors to seperate the job title.
 
-## education vs salary
-### prepare data for education
-```{r}
+
+## Education level vs salary
+```{r echo=FALSE}
 data%>% 
   mutate(lower_jd = tolower(`Job Description`))%>% 
   select("Job Title","lower_jd","Sector","Low_salary(k)","High_salary(k)","Avg_salary(k)") -> data_lower
@@ -232,8 +229,7 @@ data_academic%>%
 median_ybh <- function(x) median(x,na.rm=T)
 ```
 
-#plot based on education vs salary
-```{r,fig.width = 15, fig.height = 10}
+```{r echo=FALSE, fig.width=8.5}
 data_academics %>% 
   mutate(ranking = fct_reorder(Academic, 
                             `Avg_salary(k)`, 
@@ -241,17 +237,16 @@ data_academics %>%
   ggplot(aes(x = ranking,
       y = `Avg_salary(k)`))+
   geom_boxplot(show.legend = F) +
-  center_title + 
   labs(title = "Education vs salary") +
   labs(x = "Education") +
-  labs(y = "Average salary in unit k")
+  labs(y = "Average salary in unit k") + 
+  center_title 
 
 ```
 
 
-## ridge line for sector vs salary
-### prepare data
-```{r}
+## Ridge line plot for sector vs salary
+```{r echo=FALSE,message=FALSE, warning=FALSE}
 data%>% 
   drop_na(Sector)%>% 
   group_by(Sector)%>% 
@@ -264,8 +259,7 @@ data %>%
   right_join(sector_to_label_map) -> sector_data
 ```
 
-### ridge line for sector VS salary
-```{r,fig.width = 15, fig.height = 10}
+```{r echo=FALSE, fig.width=8.5,fig.height=9}
 sector_data%>% 
   ggplot(aes(y=fct_reorder(sector_label, `Avg_salary(k)`,median_ybh) %>%
                fct_relevel("Others", after=Inf),
@@ -274,13 +268,15 @@ sector_data%>%
   labs(title = 'Sector vs salary') + 
   labs(y = "Salary") +
   labs(x = 'Sector') +
-  center_title + 
   theme_ridges() + 
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  theme(axis.title.y = element_text(angle=0, vjust = 0.5)) +
+  theme(axis.title.x = element_text(angle=0, hjust = 0.5)) +
+  center_title 
 ```
 
-###founded year vs salary hex plot
-```{r,fig.width = 15, fig.height = 10}
+## Hex plot for founded year vs salary hex plot
+```{r echo=FALSE, fig.width=8.5}
 
 data%>% 
   drop_na(Founded)%>% 
@@ -295,12 +291,10 @@ data%>%
   theme_classic() +
   center_title
 
-
 ```
 
-##company vs salary
-### parepare data
-```{r}
+## Cleveland dot plot for Company vs salary
+```{r echo=FALSE}
 data %>% 
   group_by(`Name of Company`) %>%
   summarise(n= n()) %>%
@@ -312,18 +306,15 @@ data %>%
 
 company_data%>%  
   drop_na(`job_type`)%>% 
- # filter(company_label !== "Others") %>%
   group_by(`job_type`,company_label)%>% 
   mutate(salary_jobT= mean_ybh(`Avg_salary(k)`)) %>% 
   arrange(-salary_jobT) %>% 
   select(company_label,`job_type`,salary_jobT)%>%
   filter(company_label != "Others") -> data_company
-  
 
 ```
 
-### company vs salary
-```{r,fig.width = 15, fig.height = 10}
+```{r echo=FALSE, fig.width=8.5, fig.height = 7}
 data_company%>%
   ggplot(aes(x=salary_jobT,
             y=fct_reorder(company_label, salary_jobT,median_ybh),
@@ -337,9 +328,8 @@ data_company%>%
   
 ```
 
-
-##rating vs salary wrap up by industry, color by job title 
-```{r,fig.width = 15, fig.height = 10}
+## Glassdoor rating vs salary, wrap by Industry
+```{r echo=FALSE, fig.height=7, fig.width=9}
 
 cor_df <- data %>%
   drop_na(Rating)%>% 
@@ -360,20 +350,16 @@ data %>%
   facet_wrap(~fct_relevel(Sector, as.character(cor_df$Sector))) +
   xlab('Rating') +
   ylab("Average salary") +
-  labs(title = 'Rating vs salary wrap up by industry, color by job title ')
-  theme_linedraw()
+  labs(title = 'Rating vs salary wrap up by industry ') +
+  theme_linedraw() + 
+  center_title
   
   
 ```
 
 
-
 ## Alluvial plot (Sector, Type of ownership, salary_group) 
-```{r,fig.height=20,fig.width=30}
-library("readxl")
-# xls files
-data <- read_excel("data/clean_loc.xlsx")
-
+```{r,echo=FALSE, fig.width=23, fig.height=15}
 data %>% 
   drop_na(`Type of ownership`) %>% 
   drop_na(Sector) %>% 
@@ -394,13 +380,10 @@ data2 %>%
   geom_text(stat = "stratum", aes(label = paste(after_stat(stratum), "\n", after_stat(count))),size=5) +
   scale_x_discrete(limits = c("Sector", "Type of ownership", "salary_group")) 
 
-
 ```
 
-
 ## Employee Salary Group VS Company Revenue Level - Mosaic Plot
-```{r}
-data <- read_excel("data/clean_data.xlsx")
+```{r echo=FALSE}
 
 data %>%
   drop_na(Revenue)  %>% 
@@ -422,7 +405,7 @@ data %>%
 
 ```
 
-```{r}
+```{r echo=FALSE}
 data_revenue %>% 
   drop_na(`Avg_salary(k)`) %>%
   mutate(salary_group = if_else(`Avg_salary(k)`>100,"High(>100k)",
@@ -430,7 +413,7 @@ data_revenue %>%
 ```
 
 
-```{r}
+```{r echo=FALSE, fig.width=10, fig.height = 6}
 data_revenue_salary %>% 
   mutate(revenue_level = factor(revenue_level,levels = 
                                  c("1m",
@@ -455,3 +438,4 @@ data_revenue_salary %>%
               main = "Employee Salary Group v.s. Company Revenue Level")
 
 
+```

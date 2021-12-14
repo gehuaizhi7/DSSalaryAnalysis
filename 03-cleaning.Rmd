@@ -1,6 +1,9 @@
+---
+output: html_document
+---
 # Data transformation
 
-```{r}
+```{r echo=FALSE}
 if(!require(plyr)) install.packages("plyr")
 if(!require(dplyr)) install.packages("dplyr")
 if(!require(tibble)) install.packages("tibble")
@@ -39,9 +42,8 @@ theme(plot.title = element_text(hjust=0.5))  -> center_title
 ```
 
 
-```{r}
+```{r echo=FALSE}
 library("data.table")
-
 
 writeEXCEL <- function(df, file = filename, fgFill = "#007b58") {
   options("openxlsx.borderColour" = fgFill)
@@ -71,17 +73,17 @@ writeEXCEL <- function(df, file = filename, fgFill = "#007b58") {
 
 ```
 
+The data we have are four csv files, which are grouped by four kinds of  job titles: data science, data analyst, data engineer and business analyst. However, through scanning the dataset, we found that some of the tags inside the document are incorrect. Thus, the first step we take is through searching keywords inside the job title column and job description column, re-classifying our data. The sequence we labeled them is based on counts of their appearance inside the entire dataset. For instance, a job could both contain keywords for data science and data analyst. However, since data analyst appears more frequently, we tagged this job as data scientist. Also, missing values are written in different formats such as “-1”, “not applicable” . They are also replaced by NA. In addition, we separate the estimated salary into continuous data form: min_salary, max_salary and mean_salary.
 
 
-
-```{r}
+```{r echo=FALSE}
 fread("data/BusinessAnalyst.csv") %>% select(-c(V1, index)) -> df_ba
 fread("data/DataAnalyst.csv")  -> df_da
 fread("data/DataEngineer.csv") -> df_de
 fread("data/DataScientist.csv") %>% select(-c(V1, index)) -> df_ds
 ```
 
-```{r}
+```{r include=FALSE}
 inner_join(
   df_ds %>% transmute(`Job Title`, `Job Description`, `Company Name`, datafile = "DS"),
   df_da %>% transmute(`Job Title`, `Job Description`, `Company Name`, datafile = "DA"),
@@ -90,11 +92,10 @@ inner_join(
   arrange_at("Job Title.x")
   
 
-  
 ```
  
-## Get new job title using speical character in title and description
-```{r}
+Here are 8 lables after searching through 
+```{r echo=FALSE}
 bind_rows(
   df_ba,
   df_da,
@@ -121,7 +122,7 @@ df_labeled %>%
   filter(value!=0) %>%
   group_by(name) %>%
   summarise(n = n()) %>%
-  arrange(-n) %>%
+  arrange(-n) %>% 
   pull(name)  #give sequence 
 
 df_labeled %>%
@@ -140,8 +141,8 @@ df_labeled %>%
   select(`Job Title`, `Job Description`, `Company Name`, job_type) -> unique_mapper
 ```
 
-## plot distribution of four new lableed Job title
-```{r}
+
+```{r echo=FALSE}
 # one to one
 unique_mapper %>%
 ggplot() +
@@ -152,27 +153,8 @@ ggplot() +
 ```
 
 
-```{r}
-# one to many label
-df_labeled %>%
-  rowwise() %>%
-  mutate(is_ba = max(is_ba_byjt, is_ba_byjd)) %>%
-  mutate(is_de = max(is_de_byjt, is_de_byjd)) %>%
-  mutate(is_ds = max(is_ds_byjt, is_ds_byjd)) %>%
-  mutate(is_da = max(is_da_byjt, is_da_byjd)) %>%
-  select(1:3, is_ba, is_de, is_da, is_ds) %>%
-  pivot_longer(4:ncol(.), 
-               names_to = "Job_Type") %>% 
-  filter(value!=0) %>% select(-value) -> multi_mapper
 
-multi_mapper %>%  
-ggplot() +
-  aes(x =  Job_Type) +
-  geom_histogram(stat="count")
-```
- 
-## get data with updated job title
-```{r}
+```{r echo=FALSE}
 bind_rows(
   df_ba %>% mutate(file_Type = "BA"),
   df_da %>% mutate(file_Type = "DA"),
@@ -185,8 +167,7 @@ bind_rows(
 ```
 
 
-## find all missing value, replaced with NA, clean company name, seperate salary estimate into min, max and avg of salary
-```{r}
+```{r echo=FALSE}
 clean_jobT %>%
   select(1:ncol(.))%>%
   mutate_all(~ifelse(. %in% c("NA", -1, "Unknown", "Unknown / Non-Applicable"), NA, .))   %>%
@@ -207,8 +188,8 @@ clean_jobT %>%
 
 ```
 
-## take out state from location column
-```{r}
+
+```{r echo=FALSE}
 
 fread("data/state.csv") -> state_df
 
@@ -219,11 +200,9 @@ clean_data %>%
 
 split(clean_data, ~job_type) ->  clean_locs 
 
-
 ```
 
-##prepare data for D3
-```{r}
+```{r echo=FALSE}
 clean_loc %>% 
   mutate(State = str_sub(`Location`,-2))  %>% 
   right_join(state_df)   %>% 
@@ -234,8 +213,8 @@ clean_loc %>%
   arrange(-salary_state_avg) -> state_salary
 ```
 
-## save as xlsx file
-```{r}
+
+```{r echo=FALSE}
 # clean_loc %>%
 #   writeEXCEL("clean_loc.xlsx") 
 #   

@@ -29,3 +29,9 @@ alluvial-plot-sector-type-of-ownership-salary_group
 employee-salary-group-vs-company-revenue-level---mosaic-plot
 interactive-component
 conclusion
+box-plot-for-skillset-vs-salary
+education-level-vs-salary
+ridge-line-plot-for-sector-vs-salary
+glassdoor-rating-vs-salary-wrap-by-industry
+hex-plot-for-founded-year-vs-salary-hex-plot
+cleveland-dot-plot-for-company-vs-salary
